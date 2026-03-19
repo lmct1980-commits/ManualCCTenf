@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>NurseDesk — UCI Cirurgia Cardíaca</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e14;--s1:#111827;--s2:#1a2233;--s3:#222d40;
+  --bord:#2a3548;--acc:#00d4aa;--acc2:#4fc3f7;--acc3:#ff7043;
+  --txt:#e8eef8;--txt2:#8fa3c0;--txt3:#566a85;
+  --red:#f85149;--yel:#e3b341;--grn:#3fb950;--pur:#ab47bc;
+  --r:14px;--rs:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);display:flex;flex-direction:column;}
+
+/* TOP BAR */
+.topbar{background:var(--s1);border-bottom:1px solid var(--bord);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:50;}
+.topbar-title{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--acc);}
+.topbar-title small{font-family:'Outfit',sans-serif;font-size:0.68rem;color:var(--txt3);margin-left:6px;font-weight:500;}
+.clock{font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--acc);background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.18);padding:3px 10px;border-radius:20px;}
+
+/* LAYOUT */
+.app{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:64px;background:var(--s1);border-right:1px solid var(--bord);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px;flex-shrink:0;overflow-y:auto;}
+.sidebar::-webkit-scrollbar{display:none;}
+.nav-item{width:52px;height:52px;border:none;background:none;cursor:pointer;border-radius:var(--rs);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:var(--txt3);}
+.nav-item .ni{font-size:1.35rem;line-height:1;}
+.nav-item .nl{font-size:0.5rem;font-family:'Outfit',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;text-align:center;line-height:1.2;}
+.nav-item:hover{background:var(--s2);color:var(--txt2);}
+.nav-item.active{background:rgba(0,212,170,0.12);color:var(--acc);}
+.nav-sep{width:36px;height:1px;background:var(--bord);margin:4px 0;}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:16px;}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-thumb{background:var(--bord);border-radius:4px;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--bord);border-radius:var(--r);padding:16px;margin-bottom:14px;}
+.card-hd{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.card-hd h3{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--txt);}
+.card-hd .badge{margin-left:auto;}
+
+/* INPUTS */
+input,select,textarea{background:var(--s2);border:1px solid var(--bord);border-radius:var(--rs);color:var(--txt);font-family:'Outfit',sans-serif;font-size:0.88rem;padding:9px 12px;width:100%;transition:border-color 0.2s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);}
+label{display:block;font-size:0.7rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.field{margin-bottom:11px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+/* BUTTONS */
+.btn{padding:9px 16px;border:none;border-radius:var(--rs);cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:700;transition:all 0.15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+.btn-p{background:var(--acc);color:#0a0e14;} .btn-p:active{background:#00bfa0;}
+.btn-s{background:var(--s3);color:var(--txt);border:1px solid var(--bord);}
+.btn-full{width:100%;}
+.btn-sm{padding:5px 11px;font-size:0.78rem;}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:0.68rem;font-weight:700;letter-spacing:0.3px;}
+.bg{background:rgba(63,185,80,0.15);color:var(--grn);}
+.by{background:rgba(227,179,65,0.15);color:var(--yel);}
+.br{background:rgba(248,81,73,0.15);color:var(--red);}
+.bb{background:rgba(79,195,247,0.15);color:var(--acc2);}
+.bp{background:rgba(171,71,188,0.15);color:var(--pur);}
+.bt{background:rgba(0,212,170,0.15);color:var(--acc);}
+
+/* RESULT BOX */
+.rbox{background:rgba(0,212,170,0.07);border:1px solid rgba(0,212,170,0.22);border-radius:var(--rs);padding:14px;text-align:center;margin-top:12px;display:none;}
+.rbox.show{display:block;}
+.rval{font-family:'DM Mono',monospace;font-size:1.6rem;color:var(--acc);font-weight:500;}
+.rlbl{font-size:0.78rem;color:var(--txt2);margin-top:3px;}
+.rbox-sm{padding:10px 12px;margin-top:8px;display:none;}
+.rbox-sm.show{display:block;}
+.rbox-sm .rval{font-size:1.2rem;}
+
+/* SCORE OPTIONS */
+.sopt{background:var(--s2);border:2px solid var(--bord);border-radius:var(--rs);padding:9px 12px;cursor:pointer;font-size:0.82rem;margin-bottom:6px;transition:all 0.15s;display:flex;justify-content:space-between;align-items:center;}
+.sopt:active{transform:scale(0.98);}
+.sopt.sel{border-color:var(--acc);background:rgba(0,212,170,0.08);}
+.sopt-v{font-family:'DM Mono',monospace;color:var(--acc);font-weight:700;font-size:0.9rem;}
+
+/* ACCORDION */
+.acc-item{background:var(--s1);border:1px solid var(--bord);border-radius:var(--rs);margin-bottom:8px;overflow:hidden;}
+.acc-hd{padding:12px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:background 0.15s;}
+.acc-hd:active{background:var(--s2);}
+.acc-hd-left{display:flex;align-items:center;gap:8px;}
+.acc-hd-title{font-weight:600;font-size:0.88rem;}
+.acc-hd-right{display:flex;align-items:center;gap:6px;}
+.acc-chevron{color:var(--txt3);font-size:0.75rem;transition:transform 0.2s;}
+.acc-item.open .acc-chevron{transform:rotate(180deg);}
+.acc-body{display:none;padding:12px 14px;border-top:1px solid var(--bord);background:var(--s2);font-size:0.82rem;line-height:1.7;}
+.acc-item.open .acc-body{display:block;}
+.acc-row{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:10px;}
+.acc-lbl{font-size:0.68rem;text-transform:uppercase;color:var(--txt3);letter-spacing:0.5px;margin-bottom:1px;}
+.acc-val{color:var(--txt);}
+.trat-box{background:rgba(0,212,170,0.06);border:1px solid rgba(0,212,170,0.18);border-radius:8px;padding:10px 12px;margin-top:8px;}
+.trat-box-title{font-size:0.68rem;text-transform:uppercase;color:var(--acc);font-weight:700;margin-bottom:4px;}
+
+/* DRUG CARD */
+.drug-card{background:var(--s1);border:1px solid var(--bord);border-radius:var(--rs);margin-bottom:8px;overflow:hidden;}
+.drug-hd{padding:11px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+.drug-hd:active{background:var(--s2);}
+.drug-name{font-weight:700;font-size:0.9rem;}
+.drug-class{font-size:0.72rem;color:var(--txt3);}
+.drug-body{display:none;border-top:1px solid var(--bord);background:var(--s2);padding:12px 14px;font-size:0.81rem;line-height:1.8;}
+.drug-card.open .drug-body{display:block;}
+.drug-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:8px;}
+.drug-row-lbl{color:var(--txt3);font-size:0.72rem;text-transform:uppercase;flex-shrink:0;padding-top:1px;}
+.drug-row-val{color:var(--txt);text-align:right;font-size:0.82rem;}
+.drug-alert{background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.2);border-radius:6px;padding:7px 10px;margin-top:8px;font-size:0.78rem;color:var(--red);}
+
+/* LAB VALUES */
+.lab-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.lab-item{background:var(--s2);border:1px solid var(--bord);border-radius:var(--rs);padding:10px 12px;}
+.lab-name{font-size:0.72rem;font-weight:700;text-transform:uppercase;color:var(--txt2);margin-bottom:2px;}
+.lab-range{font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--acc);}
+.lab-unit{font-size:0.7rem;color:var(--txt3);}
+.lab-alert{font-size:0.7rem;color:var(--red);margin-top:2px;}
+
+/* CHECKLIST */
+.check-item{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--bord);border-radius:var(--rs);padding:11px 13px;margin-bottom:7px;cursor:pointer;transition:all 0.15s;}
+.check-item.done{opacity:0.45;border-color:var(--grn);}
+.checkmark{width:20px;height:20px;border:2px solid var(--bord);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;transition:all 0.15s;}
+.check-item.done .checkmark{background:var(--grn);border-color:var(--grn);color:#0a0e14;}
+.check-txt{flex:1;font-size:0.86rem;}
+.check-time{font-size:0.72rem;color:var(--txt3);font-family:'DM Mono',monospace;}
+
+/* PROTOCOL CARD */
+.proto{background:var(--s1);border:1px solid var(--bord);border-radius:var(--r);margin-bottom:12px;overflow:hidden;}
+.proto-hd{padding:13px 15px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid transparent;}
+.proto-hd:active{background:var(--s2);}
+.proto.open .proto-hd{border-bottom-color:var(--bord);}
+.proto-title{font-family:'DM Serif Display',serif;font-size:1rem;}
+.proto-body{display:none;padding:14px 15px;background:var(--s2);font-size:0.82rem;line-height:1.8;}
+.proto.open .proto-body{display:block;}
+.step{display:flex;gap:10px;margin-bottom:8px;}
+.step-n{width:22px;height:22px;background:var(--acc);color:#0a0e14;border-radius:50%;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-txt{flex:1;}
+.alert-box{background:rgba(248,81,73,0.08);border-left:3px solid var(--red);border-radius:4px;padding:8px 12px;margin:8px 0;font-size:0.8rem;color:var(--red);}
+.info-box{background:rgba(0,212,170,0.07);border-left:3px solid var(--acc);border-radius:4px;padding:8px 12px;margin:8px 0;font-size:0.8rem;}
+.warn-box{background:rgba(227,179,65,0.08);border-left:3px solid var(--yel);border-radius:4px;padding:8px 12px;margin:8px 0;font-size:0.8rem;color:var(--yel);}
+
+/* HOME GRID */
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.home-card{background:var(--s1);border:1px solid var(--bord);border-radius:var(--r);padding:16px 14px;cursor:pointer;transition:all 0.2s;text-align:center;}
+.home-card:active{border-color:var(--acc);background:var(--s2);}
+.home-icon{font-size:2rem;margin-bottom:6px;}
+.home-title{font-weight:700;font-size:0.85rem;color:var(--txt);}
+.home-sub{font-size:0.7rem;color:var(--txt3);margin-top:2px;}
+
+/* PAGE TITLE */
+.pg-title{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--txt);margin-bottom:4px;}
+.pg-sub{font-size:0.78rem;color:var(--txt2);margin-bottom:16px;}
+
+/* INNER TABS */
+.itabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
+.itabs::-webkit-scrollbar{height:0;}
+.itab{padding:5px 13px;border:1px solid var(--bord);border-radius:20px;background:none;color:var(--txt2);cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:600;white-space:nowrap;transition:all 0.15s;}
+.itab.active{background:var(--acc);color:#0a0e14;border-color:var(--acc);}
+
+/* RESET BTN */
+.reset-btn{background:none;border:none;color:var(--txt3);font-size:0.75rem;cursor:pointer;padding:4px 8px;font-family:'Outfit',sans-serif;}
+.reset-btn:hover{color:var(--acc);}
+/* ECG TRACE */
+.ecg-wrap{background:#030a06;border:1px solid #0d2b1a;border-radius:8px;padding:6px 8px;margin-bottom:12px;overflow:hidden;position:relative;}
+.ecg-label{font-size:0.6rem;font-family:'DM Mono',monospace;color:#1a6b35;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;}
+.ecg-svg{display:block;width:100%;overflow:hidden;}
+.ecg-trace{fill:none;stroke:#00d4aa;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.ecg-trace-warn{fill:none;stroke:#e3b341;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.ecg-trace-danger{fill:none;stroke:#f85149;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+@keyframes ecgMove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ecg-anim{animation:ecgMove 3.5s linear infinite;}
+.ecg-anim-fast{animation:ecgMove 1.8s linear infinite;}
+.ecg-anim-slow{animation:ecgMove 6s linear infinite;}
+.ecg-anim-chaos{animation:ecgMove 1.2s linear infinite;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">NurseDesk <small>UCI Cirurgia Cardíaca</small></div>
+  <div class="clock" id="clock">--:--</div>
+</div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <button class="nav-item active" onclick="nav('home')" title="Início"><span class="ni">🏠</span><span class="nl">Início</span></button>
+    <button class="nav-item" onclick="nav('calc')" title="Cálculos"><span class="ni">💉</span><span class="nl">Cálc.</span></button>
+    <button class="nav-item" onclick="nav('scores')" title="Scores"><span class="ni">📊</span><span class="nl">Scores</span></button>
+    <button class="nav-item" onclick="nav('racios')" title="Rácios"><span class="ni">🫁</span><span class="nl">Rácios</span></button>
+    <div class="nav-sep"></div>
+    <button class="nav-item" onclick="nav('farmacos')" title="Fármacos"><span class="ni">💊</span><span class="nl">Fárm.</span></button>
+    <button class="nav-item" onclick="nav('arritmias')" title="Arritmias"><span class="ni">🫀</span><span class="nl">Arrit.</span></button>
+    <button class="nav-item" onclick="nav('protocolos')" title="Protocolos"><span class="ni">🚨</span><span class="nl">Proto.</span></button>
+    <div class="nav-sep"></div>
+    <button class="nav-item" onclick="nav('lab')" title="Laboratório"><span class="ni">🔬</span><span class="nl">Lab</span></button>
+    <button class="nav-item" onclick="nav('checklist')" title="Checklist"><span class="ni">✅</span><span class="nl">Check</span></button>
+    <button class="nav-item" onclick="nav('hemo')" title="Hemodinâmica"><span class="ni">📡</span><span class="nl">Hemo</span></button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- HOME -->
+    <div class="page active" id="p-home">
+      <div class="pg-title">Olá! 👋</div>
+      <div class="pg-sub" id="date-display"></div>
+      <div class="home-grid">
+        <div class="home-card" onclick="nav('calc')"><div class="home-icon">💉</div><div class="home-title">Cálculos</div><div class="home-sub">Perfusões · Doses</div></div>
+        <div class="home-card" onclick="nav('scores')"><div class="home-icon">📊</div><div class="home-title">Scores</div><div class="home-sub">Glasgow · NEWS2 · Ramsay</div></div>
+        <div class="home-card" onclick="nav('racios')"><div class="home-icon">🫁</div><div class="home-title">Rácios Resp.</div><div class="home-sub">P/F · S/F · ROX · Vd/Vt</div></div>
+        <div class="home-card" onclick="nav('farmacos')"><div class="home-icon">💊</div><div class="home-title">Fármacos UCI</div><div class="home-sub">Diluições · Doses</div></div>
+        <div class="home-card" onclick="nav('arritmias')"><div class="home-icon">🫀</div><div class="home-title">Arritmias</div><div class="home-sub">Guia pós-CEC</div></div>
+        <div class="home-card" onclick="nav('protocolos')"><div class="home-icon">🚨</div><div class="home-title">Emergência</div><div class="home-sub">RCP · Cardioversão</div></div>
+        <div class="home-card" onclick="nav('lab')"><div class="home-icon">🔬</div><div class="home-title">Laboratório</div><div class="home-sub">Valores normais</div></div>
+        <div class="home-card" onclick="nav('checklist')"><div class="home-icon">✅</div><div class="home-title">Checklist</div><div class="home-sub">Cuidados do turno</div></div>
+        <div class="home-card" onclick="nav('hemo')"><div class="home-icon">📡</div><div class="home-title">Hemodinâmica</div><div class="home-sub">Swan-Ganz · BIS · SvO₂</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><h3>⚡ Acesso Rápido</h3></div>
+        <div class="g2">
+          <button class="btn btn-s btn-full" onclick="nav('calc');switchCalc('perf',null)">Perfusão kg</button>
+          <button class="btn btn-s btn-full" onclick="nav('calc');switchCalc('diluicao',null)">Diluição</button>
+          <button class="btn btn-s btn-full" onclick="nav('scores');switchScore('glasgow',null)">Glasgow</button>
+          <button class="btn btn-s btn-full" onclick="nav('scores');switchScore('ramsay',null)">Ramsay</button>
+          <button class="btn btn-s btn-full" onclick="nav('protocolos');openProto('rcp')">RCP Adulto</button>
+          <button class="btn btn-s btn-full" onclick="nav('protocolos');openProto('fa')">FA pós-op</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CÁLCULOS -->
+    <div class="page" id="p-calc">
+      <div class="pg-title">💉 Cálculos</div>
+      <div class="itabs">
+        <button class="itab active" onclick="switchCalc('diluicao',this)">Diluição</button>
+      </div>
+
+      <!-- DILUIÇÃO / DOSE ATUAL -->
+      <div id="c-diluicao">
+        <div class="card">
+          <div class="card-hd"><h3>mL/h → Dose que está a fazer</h3></div>
+          <div class="g2">
+            <div class="field"><label>Fármaco total (mg ou UI)</label><input id="rev-farm" type="number" inputmode="decimal" step="0.01" placeholder="Ex: 5" oninput="calcRev()"></div>
+            <div class="field"><label>Volume solvente (mL)</label><input id="rev-vol" type="number" inputmode="decimal" placeholder="Ex: 250" oninput="calcRev()"></div>
+          </div>
+          <div class="g2">
+            <div class="field"><label>Ritmo atual (mL/h)</label><input id="rev-mlh" type="number" inputmode="decimal" step="0.1" placeholder="Ex: 10" oninput="calcRev()"></div>
+            <div class="field"><label>Peso do doente (kg)</label><input id="rev-peso" type="number" inputmode="decimal" placeholder="Ex: 70" oninput="calcRev()"></div>
+          </div>
+          <div class="rbox show" id="res-rev">
+            <div class="rval" id="rev-val">—</div>
+            <div class="rlbl" id="rev-lbl">Dose atual</div>
+          </div>
+          <div id="rev-extra" style="margin-top:8px;font-size:0.78rem;color:var(--txt2);line-height:1.8;display:none"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd"><h3>Dose → Ritmo a colocar (mL/h)</h3></div>
+          <div class="g2">
+            <div class="field"><label>Fármaco total (mg ou UI)</label><input id="fwd-farm" type="number" inputmode="decimal" step="0.01" placeholder="Ex: 5" oninput="calcFwd()"></div>
+            <div class="field"><label>Volume solvente (mL)</label><input id="fwd-vol" type="number" inputmode="decimal" placeholder="Ex: 250" oninput="calcFwd()"></div>
+          </div>
+          <div class="g2">
+            <div class="field"><label>Peso do doente (kg)</label><input id="fwd-peso" type="number" inputmode="decimal" placeholder="Ex: 70" oninput="calcFwd()"></div>
+            <div class="field"><label>Unidade da dose</label>
+              <select id="fwd-un" onchange="calcFwd()">
+                <option value="mcg_kg_min">mcg/kg/min</option>
+                <option value="mcg_kg_h">mcg/kg/h</option>
+                <option value="mg_kg_h">mg/kg/h</option>
+                <option value="mg_h">mg/h</option>
+                <option value="ui_h">UI/h</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label>Dose pretendida</label><input id="fwd-dose" type="number" inputmode="decimal" step="0.001" placeholder="Ex: 0.1" oninput="calcFwd()"></div>
+          <div class="rbox show" id="res-fwd">
+            <div class="rval" id="fwd-val">—</div>
+            <div class="rlbl" id="fwd-lbl">Ritmo a programar</div>
+          </div>
+          <div id="fwd-extra" style="margin-top:8px;font-size:0.78rem;color:var(--txt2);line-height:1.8;display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCORES -->
+    <div class="page" id="p-scores">
+      <div class="pg-title">📊 Scores Clínicos</div>
+      <div class="itabs">
+        <button class="itab active" onclick="switchScore('glasgow',this)">Glasgow</button>
+        <button class="itab" onclick="switchScore('ramsay',this)">Ramsay</button>
+        <button class="itab" onclick="switchScore('news',this)">NEWS2</button>
+      </div>
+
+      <!-- GLASGOW -->
+      <div id="sc-glasgow">
+        <div class="card">
+          <div class="card-hd"><h3>🧠 Escala de Coma de Glasgow</h3><button class="reset-btn" onclick="resetGlasgow()">↺ Reset</button></div>
+          <label style="margin-bottom:8px;display:block">Abertura Ocular (E)</label>
+          <div id="gl-E" style="margin-bottom:12px">
+            <div class="sopt" onclick="selGl('E',4,this)"><span>Espontânea</span><span class="sopt-v">4</span></div>
+            <div class="sopt" onclick="selGl('E',3,this)"><span>À voz</span><span class="sopt-v">3</span></div>
+            <div class="sopt" onclick="selGl('E',2,this)"><span>À dor</span><span class="sopt-v">2</span></div>
+            <div class="sopt" onclick="selGl('E',1,this)"><span>Sem resposta</span><span class="sopt-v">1</span></div>
+          </div>
+          <label style="margin-bottom:8px;display:block">Resposta Verbal (V)</label>
+          <div id="gl-V" style="margin-bottom:12px">
+            <div class="sopt" onclick="selGl('V',5,this)"><span>Orientada</span><span class="sopt-v">5</span></div>
+            <div class="sopt" onclick="selGl('V',4,this)"><span>Confusa</span><span class="sopt-v">4</span></div>
+            <div class="sopt" onclick="selGl('V',3,this)"><span>Palavras inapropriadas</span><span class="sopt-v">3</span></div>
+            <div class="sopt" onclick="selGl('V',2,this)"><span>Sons incompreensíveis</span><span class="sopt-v">2</span></div>
+            <div class="sopt" onclick="selGl('V',1,this)"><span>Sem resposta</span><span class="sopt-v">1</span></div>
+          </div>
+          <label style="margin-bottom:8px;display:block">Resposta Motora (M)</label>
+          <div id="gl-M" style="margin-bottom:12px">
+            <div class="sopt" onclick="selGl('M',6,this)"><span>Obedece a ordens</span><span class="sopt-v">6</span></div>
+            <div class="sopt" onclick="selGl('M',5,this)"><span>Localiza a dor</span><span class="sopt-v">5</span></div>
+            <div class="sopt" onclick="selGl('M',4,this)"><span>Flexão normal</span><span class="sopt-v">4</span></div>
+            <div class="sopt" onclick="selGl('M',3,this)"><span>Flexão anormal</span><span class="sopt-v">3</span></div>
+            <div class="sopt" onclick="selGl('M',2,this)"><span>Extensão</span><span class="sopt-v">2</span></div>
+            <div class="sopt" onclick="selGl('M',1,this)"><span>Sem resposta</span><span class="sopt-v">1</span></div>
+          </div>
+          <div class="rbox show"><div class="rval" id="gl-val">—</div><div class="rlbl" id="gl-lbl">Seleciona as respostas acima</div></div>
+        </div>
+      </div>
+
+      <!-- RAMSAY -->
+      <div id="sc-ramsay" style="display:none">
+        <div class="card">
+          <div class="card-hd"><h3>😴 Escala de Ramsay</h3><button class="reset-btn" onclick="resetRamsay()">↺ Reset</button></div>
+          <div class="sopt" onclick="selRamsay(1,this)"><span>1 — Ansioso, agitado, inquieto</span><span class="sopt-v">1</span></div>
+          <div class="sopt" onclick="selRamsay(2,this)"><span>2 — Cooperante, orientado, tranquilo</span><span class="sopt-v">2</span></div>
+          <div class="sopt" onclick="selRamsay(3,this)"><span>3 — Responde apenas a ordens verbais</span><span class="sopt-v">3</span></div>
+          <div class="sopt" onclick="selRamsay(4,this)"><span>4 — Resposta brisk a estímulo glabelar/sonoro</span><span class="sopt-v">4</span></div>
+          <div class="sopt" onclick="selRamsay(5,this)"><span>5 — Resposta lenta a estímulo glabelar/sonoro</span><span class="sopt-v">5</span></div>
+          <div class="sopt" onclick="selRamsay(6,this)"><span>6 — Sem resposta a qualquer estímulo</span><span class="sopt-v">6</span></div>
+          <div class="rbox show" style="margin-top:12px"><div class="rval" id="ramsay-val">—</div><div class="rlbl" id="ramsay-lbl">Seleciona o nível</div></div>
+          <div style="margin-top:12px;font-size:0.78rem;color:var(--txt2);line-height:1.8">
+            <b style="color:var(--yel)">Alvo UCI sedação leve:</b> Ramsay 2–3<br>
+            <b style="color:var(--acc)">Alvo UCI sedação moderada:</b> Ramsay 3–4<br>
+            <b style="color:var(--red)">Sedação profunda (ex. ARDS):</b> Ramsay 5–6
+          </div>
+        </div>
+      </div>
+
+      <!-- NEWS2 -->
+      <div id="sc-news" style="display:none">
+        <div class="card">
+          <div class="card-hd"><h3>📈 NEWS2</h3><button class="reset-btn" onclick="resetNEWS()">↺ Reset</button></div>
+          <div class="g2">
+            <div class="field"><label>FR (rpm)</label><input id="n-fr" type="number" inputmode="decimal" oninput="calcNEWS()"></div>
+            <div class="field"><label>SpO₂ (%)</label><input id="n-spo2" type="number" inputmode="decimal" oninput="calcNEWS()"></div>
+            <div class="field"><label>Suplemento O₂</label><select id="n-o2" onchange="calcNEWS()"><option value="0">Não</option><option value="2">Sim</option></select></div>
+            <div class="field"><label>TA sistólica (mmHg)</label><input id="n-ts" type="number" inputmode="decimal" oninput="calcNEWS()"></div>
+            <div class="field"><label>FC (bpm)</label><input id="n-fc" type="number" inputmode="decimal" oninput="calcNEWS()"></div>
+            <div class="field"><label>Temperatura (°C)</label><input id="n-temp" type="number" inputmode="decimal" step="0.1" oninput="calcNEWS()"></div>
+          </div>
+          <div class="field"><label>Consciência</label><select id="n-cons" onchange="calcNEWS()"><option value="0">A — Alerta</option><option value="3">C/V/P/U — Confusão/Voz/Dor/Sem resposta</option></select></div>
+          <div class="rbox show"><div class="rval" id="news-val">—</div><div class="rlbl" id="news-lbl">Preenche os campos</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RÁCIOS RESPIRATÓRIOS -->
+    <div class="page" id="p-racios">
+      <div class="pg-title">🫁 Rácios Respiratórios</div>
+      <div class="pg-sub">Avaliação da função respiratória</div>
+      <div class="card">
+        <div class="card-hd"><h3>Dados</h3><button class="reset-btn" onclick="resetRacios()">↺ Reset</button></div>
+        <div class="g2">
+          <div class="field"><label>PaO₂ (mmHg)</label><input id="rr-pao2" type="number" inputmode="decimal" step="0.1" oninput="calcRacios()"></div>
+          <div class="field"><label>FiO₂ (0.21–1.0)</label><input id="rr-fio2" type="number" inputmode="decimal" step="0.01" oninput="calcRacios()"></div>
+          <div class="field"><label>SpO₂ (%)</label><input id="rr-spo2" type="number" inputmode="decimal" oninput="calcRacios()"></div>
+          <div class="field"><label>FR (rpm)</label><input id="rr-fr" type="number" inputmode="decimal" oninput="calcRacios()"></div>
+          <div class="field"><label>PaCO₂ (mmHg)</label><input id="rr-paco2" type="number" inputmode="decimal" step="0.1" oninput="calcRacios()"></div>
+          <div class="field"><label>EtCO₂ (mmHg)</label><input id="rr-etco2" type="number" inputmode="decimal" step="0.1" oninput="calcRacios()"></div>
+        </div>
+      </div>
+      <div class="rbox-sm show card" id="rr-pf-box"><div class="rval" id="rr-pf-val">—</div><div class="rlbl" id="rr-pf-lbl">P/F — PaO₂/FiO₂ (preenche PaO₂ e FiO₂)</div></div>
+      <div class="rbox-sm show card" id="rr-sf-box"><div class="rval" id="rr-sf-val">—</div><div class="rlbl" id="rr-sf-lbl">S/F — SpO₂/FiO₂ (preenche SpO₂ e FiO₂)</div></div>
+      <div class="rbox-sm show card" id="rr-rox-box"><div class="rval" id="rr-rox-val">—</div><div class="rlbl" id="rr-rox-lbl">ROX Index (preenche SpO₂, FiO₂ e FR)</div></div>
+      <div class="rbox-sm show card" id="rr-ds-box"><div class="rval" id="rr-ds-val">—</div><div class="rlbl" id="rr-ds-lbl">Dead Space Vd/Vt (preenche PaCO₂ e EtCO₂)</div></div>
+      <div class="card" style="margin-top:4px">
+        <div class="card-hd"><h3>Referência</h3></div>
+        <div style="font-size:0.79rem;line-height:2;color:var(--txt2)">
+          <b style="color:var(--grn)">P/F normal:</b> ≥300 · <b style="color:var(--yel)">ARDS ligeiro:</b> 200–299 · <b style="color:var(--acc3)">Moderado:</b> 100–199 · <b style="color:var(--red)">Grave:</b> &lt;100<br>
+          <b style="color:var(--grn)">ROX ≥4.88:</b> baixo risco intubação · <b style="color:var(--red)">ROX &lt;4.88:</b> alto risco falência VNI<br>
+          <b style="color:var(--grn)">Dead Space normal:</b> ≤0.30 · <b style="color:var(--yel)">Elevado:</b> &gt;0.45
+        </div>
+      </div>
+    </div>
+
+    <!-- FÁRMACOS -->
+    <div class="page" id="p-farmacos">
+      <div class="pg-title">💊 Fármacos UCI</div>
+      <div class="itabs">
+        <button class="itab active" onclick="switchFarm('sedacao',this)">Sedação/Anal.</button>
+        <button class="itab" onclick="switchFarm('vasoativos',this)">Vasoativos</button>
+        <button class="itab" onclick="switchFarm('arritmia',this)">Antiarrítmicos</button>
+        <button class="itab" onclick="switchFarm('outros',this)">Outros</button>
+      </div>
+      <div id="farm-sedacao"></div>
+      <div id="farm-vasoativos" style="display:none"></div>
+      <div id="farm-arritmia" style="display:none"></div>
+      <div id="farm-outros" style="display:none"></div>
+    </div>
+
+    <!-- ARRITMIAS -->
+    <div class="page" id="p-arritmias">
+      <div class="pg-title">🫀 Arritmias Pós-CEC</div>
+      <div class="pg-sub">Guia de identificação e tratamento</div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-hd"><h3>Referência — Ritmo Sinusal Normal</h3></div>
+        <div class="ecg-wrap">
+          <div class="ecg-label">Ritmo sinusal normal · 60–100 bpm</div>
+          <svg class="ecg-svg" height="70" viewBox="0 0 240 70" preserveAspectRatio="none">
+            <defs><pattern id="grid-ref" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10,0 L0,0 L0,10" fill="none" stroke="#0d2b1a" stroke-width="0.5"/></pattern></defs>
+            <rect width="240" height="70" fill="url(#grid-ref)"/>
+            <g class="ecg-anim-slow">
+              <path class="ecg-trace" d="M0,35 L8,35 L10,32 L12,35 L14,35 L15,20 L16,5 L17,60 L18,10 L19,35 L22,35 L24,30 L26,35 L60,35 L68,35 L70,32 L72,35 L74,35 L75,20 L76,5 L77,60 L78,10 L79,35 L82,35 L84,30 L86,35 L120,35"/>
+              <path class="ecg-trace" d="M0,35 L8,35 L10,32 L12,35 L14,35 L15,20 L16,5 L17,60 L18,10 L19,35 L22,35 L24,30 L26,35 L60,35 L68,35 L70,32 L72,35 L74,35 L75,20 L76,5 L77,60 L78,10 L79,35 L82,35 L84,30 L86,35 L120,35" transform="translate(120,0)"/>
+            </g>
+            <!-- Labels -->
+            <text x="11" y="68" font-size="7" fill="#1a6b35" font-family="monospace">P</text>
+            <text x="16" y="68" font-size="7" fill="#1a6b35" font-family="monospace">QRS</text>
+            <text x="24" y="68" font-size="7" fill="#1a6b35" font-family="monospace">T</text>
+          </svg>
+        </div>
+        <div style="font-size:0.78rem;color:var(--txt2);line-height:1.8">
+          <b style="color:var(--txt)">P:</b> onda de despolarização auricular · <b style="color:var(--txt)">PR:</b> 120–200ms · <b style="color:var(--txt)">QRS:</b> &lt;120ms · <b style="color:var(--txt)">T:</b> repolarização ventricular
+        </div>
+      </div>
+      <div id="arritmias-list"></div>
+    </div>
+
+    <!-- PROTOCOLOS -->
+    <div class="page" id="p-protocolos">
+      <div class="pg-title">🚨 Protocolos de Emergência</div>
+      <div id="protos-list"></div>
+    </div>
+
+    <!-- LABORATÓRIO -->
+    <div class="page" id="p-lab">
+      <div class="pg-title">🔬 Valores de Laboratório</div>
+      <div class="itabs">
+        <button class="itab active" onclick="switchLab('hematologia',this)">Hematologia</button>
+        <button class="itab" onclick="switchLab('bioquimica',this)">Bioquímica</button>
+        <button class="itab" onclick="switchLab('coagulacao',this)">Coagulação</button>
+        <button class="itab" onclick="switchLab('gasimetria',this)">Gasimetria</button>
+        <button class="itab" onclick="switchLab('cardiacos',this)">Cardíacos</button>
+      </div>
+      <div id="lab-hematologia"></div>
+      <div id="lab-bioquimica" style="display:none"></div>
+      <div id="lab-coagulacao" style="display:none"></div>
+      <div id="lab-gasimetria" style="display:none"></div>
+      <div id="lab-cardiacos" style="display:none"></div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="page" id="p-checklist">
+      <div class="pg-title">✅ Checklist do Turno</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="pg-sub" style="margin-bottom:0">Cuidados essenciais UCI</div>
+        <button class="btn btn-s btn-sm" onclick="resetChecklist()">↺ Resetar</button>
+      </div>
+      <div id="checklist-list"></div>
+    </div>
+
+    <!-- HEMODINÂMICA AVANÇADA -->
+    <div class="page" id="p-hemo">
+      <div class="pg-title">📡 Hemodinâmica Avançada</div>
+      <div class="pg-sub">Swan-Ganz · BIS · SvO₂/ScvO₂</div>
+      <div class="itabs">
+        <button class="itab active" onclick="switchHemo('swan',this)">Swan-Ganz</button>
+        <button class="itab" onclick="switchHemo('bis',this)">BIS</button>
+        <button class="itab" onclick="switchHemo('svo2',this)">SvO₂ / ScvO₂</button>
+      </div>
+      <div id="hemo-swan"></div>
+      <div id="hemo-bis" style="display:none"></div>
+      <div id="hemo-svo2" style="display:none"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── CLOCK ───────────────────────────────────────────────
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('date-display').textContent=n.toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+setInterval(tick,30000); tick();
+
+// ─── NAV ─────────────────────────────────────────────────
+function nav(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('p-'+id).classList.add('active');
+  const map={home:0,calc:1,scores:2,racios:3,farmacos:4,arritmias:5,protocolos:6,lab:7,checklist:8,hemo:9};
+  const items=document.querySelectorAll('.nav-item');
+  if(map[id]!==undefined) items[map[id]].classList.add('active');
+  document.querySelector('.content').scrollTop=0;
+}
+
+// ─── CÁLCULOS ─────────────────────────────────────────────
+function switchCalc(id,btn){
+  ['diluicao'].forEach(x=>document.getElementById('c-'+x).style.display='none');
+  document.getElementById('c-'+id).style.display='block';
+  if(btn){document.querySelectorAll('#p-calc .itab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+}
+
+function calcPerf(){
+  const peso=parseFloat(document.getElementById('pp-peso').value);
+  const dose=parseFloat(document.getElementById('pp-dose').value);
+  const conc=parseFloat(document.getElementById('pp-conc').value);
+  const un=document.getElementById('pp-un').value;
+  const vEl=document.getElementById('perf-val'), lEl=document.getElementById('perf-lbl'), ex=document.getElementById('perf-extra');
+  if(!peso||!dose||!conc){vEl.textContent='—';vEl.style.color='var(--acc)';lEl.textContent='Preenche todos os campos';ex.style.display='none';return;}
+  let mlh=0,mgH=0,label='';
+  if(un==='mcg_kg_min'){mgH=(dose*peso*60)/1000;mlh=mgH/conc;label=`→ ${mgH.toFixed(3)} mg/h`;}
+  else if(un==='mg_kg_h'){mgH=dose*peso;mlh=mgH/conc;label=`→ ${mgH.toFixed(2)} mg/h`;}
+  else if(un==='mg_kg_d'){mgH=(dose*peso)/24;mlh=mgH/conc;label=`→ ${(dose*peso).toFixed(2)} mg/dia`;}
+  else if(un==='ui_kg_h'){const uiH=dose*peso;mlh=uiH/(conc*1000);label=`→ ${uiH.toFixed(0)} UI/h`;}
+  vEl.textContent=mlh.toFixed(2)+' mL/h';
+  vEl.style.color='var(--acc)';
+  lEl.textContent=label;
+  ex.style.display='block';
+  ex.innerHTML=`Peso: <b>${peso}kg</b> · Dose: <b>${dose} ${un.replace('_','/')}</b> · Conc: <b>${conc} mg/mL</b>`;
+}
+
+function calcDil(){
+  const farm=parseFloat(document.getElementById('dil-farm').value);
+  const vol=parseFloat(document.getElementById('dil-vol').value);
+  const dose=parseFloat(document.getElementById('dil-dose').value);
+  const vEl=document.getElementById('dil-val'), lEl=document.getElementById('dil-lbl');
+  if(!farm||!vol||!dose){vEl.textContent='—';lEl.textContent='Volume a aspirar';return;}
+  const conc=farm/vol;
+  const ml=dose/conc;
+  vEl.textContent=ml.toFixed(2)+' mL';
+  vEl.style.color='var(--acc)';
+  lEl.textContent=`Concentração: ${conc.toFixed(4)} mg/mL ou UI/mL`;
+}
+
+function calcRev(){
+  const farm=parseFloat(document.getElementById('rev-farm').value);
+  const vol=parseFloat(document.getElementById('rev-vol').value);
+  const mlh=parseFloat(document.getElementById('rev-mlh').value);
+  const peso=parseFloat(document.getElementById('rev-peso').value);
+  const vEl=document.getElementById('rev-val'), lEl=document.getElementById('rev-lbl');
+  const ex=document.getElementById('rev-extra');
+  if(!farm||!vol||!mlh){vEl.textContent='—';lEl.textContent='Dose atual';ex.style.display='none';return;}
+  const conc=farm/vol;
+  const mgH=conc*mlh;
+  const mgMin=mgH/60;
+  const mcgMin=mgMin*1000;
+  vEl.style.color='var(--acc)';
+  if(!isNaN(peso)&&peso>0){
+    const mcgKgMin=mcgMin/peso;
+    const mgKgH=mgH/peso;
+    vEl.textContent=mcgKgMin.toFixed(3)+' mcg/kg/min';
+    lEl.textContent='= '+mgKgH.toFixed(4)+' mg/kg/h';
+    ex.style.display='block';
+    ex.innerHTML='<b style="color:var(--acc)">'+mcgKgMin.toFixed(3)+' mcg/kg/min</b><br>'+mgKgH.toFixed(4)+' mg/kg/h<br>'+mgH.toFixed(3)+' mg/h<br>'+mcgMin.toFixed(2)+' mcg/min<br><span style="color:var(--txt3)">Conc: '+conc.toFixed(4)+' mg/mL</span>';
+  } else {
+    vEl.textContent=mgH.toFixed(3)+' mg/h';
+    lEl.textContent='= '+mcgMin.toFixed(2)+' mcg/min (insere peso para mcg/kg/min)';
+    ex.style.display='block';
+    ex.innerHTML='<b style="color:var(--acc)">'+mgH.toFixed(3)+' mg/h</b><br>'+mcgMin.toFixed(2)+' mcg/min<br><span style="color:var(--txt3)">Conc: '+conc.toFixed(4)+' mg/mL</span>';
+  }
+}
+
+function calcFwd(){
+  const farm=parseFloat(document.getElementById('fwd-farm').value);
+  const vol=parseFloat(document.getElementById('fwd-vol').value);
+  const dose=parseFloat(document.getElementById('fwd-dose').value);
+  const peso=parseFloat(document.getElementById('fwd-peso').value);
+  const un=document.getElementById('fwd-un').value;
+  const vEl=document.getElementById('fwd-val'), lEl=document.getElementById('fwd-lbl');
+  const ex=document.getElementById('fwd-extra');
+  if(!farm||!vol||!dose){vEl.textContent='—';lEl.textContent='Preenche os campos';ex.style.display='none';return;}
+  const conc=farm/vol;
+  const precisaPeso=(un==='mcg_kg_min'||un==='mcg_kg_h'||un==='mg_kg_h');
+  if(precisaPeso&&(!peso||isNaN(peso))){vEl.textContent='—';vEl.style.color='var(--yel)';lEl.textContent='⚠️ Insere o peso';ex.style.display='none';return;}
+  let mgH=0;
+  if(un==='mcg_kg_min')   mgH=(dose*peso*60)/1000;
+  else if(un==='mcg_kg_h') mgH=(dose*peso)/1000;
+  else if(un==='mg_kg_h')  mgH=dose*peso;
+  else if(un==='mg_h')     mgH=dose;
+  else if(un==='ui_h')     mgH=dose;
+  const mlH=mgH/conc;
+  const mcgMin=(mgH/60)*1000;
+  const mcgKgMin=(!isNaN(peso)&&peso>0)?(mcgMin/peso):null;
+  vEl.textContent=mlH.toFixed(2)+' mL/h';
+  vEl.style.color='var(--acc)';
+  lEl.textContent='→ '+mgH.toFixed(3)+' mg/h'+(mcgKgMin?' · '+mcgKgMin.toFixed(3)+' mcg/kg/min':'');
+  ex.style.display='block';
+  ex.innerHTML='<b style="color:var(--acc)">'+mlH.toFixed(2)+' mL/h</b> na bomba<br>'+mgH.toFixed(3)+' mg/h · '+mcgMin.toFixed(2)+' mcg/min'+(mcgKgMin?'<br><b style="color:var(--acc2)">'+mcgKgMin.toFixed(3)+' mcg/kg/min</b>':'')+'<br><span style="color:var(--txt3)">Conc: '+conc.toFixed(4)+' mg/mL</span>';
+}
+
+// ─── SCORES ──────────────────────────────────────────────
+function switchScore(id,btn){
+  ['glasgow','ramsay','news'].forEach(x=>document.getElementById('sc-'+x).style.display='none');
+  document.getElementById('sc-'+id).style.display='block';
+  if(btn){document.querySelectorAll('#p-scores .itab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+}
+
+const gl={E:0,V:0,M:0};
+function selGl(c,val,el){
+  document.querySelectorAll(`#gl-${c} .sopt`).forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel'); gl[c]=val;
+  const t=gl.E+gl.V+gl.M;
+  if(t>0){
+    document.getElementById('gl-val').textContent=t+'/15';
+    const[l,col]=t>=14?['Normal — sem alteração','var(--grn)']:t>=9?['Lesão moderada — vigilância','var(--yel)']:['Lesão grave — intervenção urgente','var(--red)'];
+    document.getElementById('gl-val').style.color=col;
+    document.getElementById('gl-lbl').textContent=`E${gl.E} V${gl.V} M${gl.M} — ${l}`;
+  }
+}
+function resetGlasgow(){
+  gl.E=0;gl.V=0;gl.M=0;
+  document.querySelectorAll('#sc-glasgow .sopt').forEach(o=>o.classList.remove('sel'));
+  document.getElementById('gl-val').textContent='—';
+  document.getElementById('gl-val').style.color='var(--acc)';
+  document.getElementById('gl-lbl').textContent='Seleciona as respostas acima';
+}
+
+function selRamsay(val,el){
+  document.querySelectorAll('#sc-ramsay .sopt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  const d=['','Ansioso/agitado','Cooperante/tranquilo','Responde a ordens','Resposta brisk','Resposta lenta','Sem resposta'];
+  const c=val<=2?'var(--grn)':val<=4?'var(--yel)':'var(--red)';
+  document.getElementById('ramsay-val').textContent=val+'/6';
+  document.getElementById('ramsay-val').style.color=c;
+  document.getElementById('ramsay-lbl').textContent=`Ramsay ${val} — ${d[val]}`;
+}
+function resetRamsay(){
+  document.querySelectorAll('#sc-ramsay .sopt').forEach(o=>o.classList.remove('sel'));
+  document.getElementById('ramsay-val').textContent='—';
+  document.getElementById('ramsay-val').style.color='var(--acc)';
+  document.getElementById('ramsay-lbl').textContent='Seleciona o nível';
+}
+
+function calcNEWS(){
+  const fr=parseFloat(document.getElementById('n-fr').value)||0;
+  const spo2=parseFloat(document.getElementById('n-spo2').value)||0;
+  const o2=parseInt(document.getElementById('n-o2').value)||0;
+  const ts=parseFloat(document.getElementById('n-ts').value)||0;
+  const fc=parseFloat(document.getElementById('n-fc').value)||0;
+  const temp=parseFloat(document.getElementById('n-temp').value)||0;
+  const cons=parseInt(document.getElementById('n-cons').value)||0;
+  let s=0;
+  if(fr){if(fr<=8)s+=3;else if(fr<=11)s+=1;else if(fr>=21&&fr<=24)s+=2;else if(fr>=25)s+=3;}
+  if(spo2){if(spo2<=91)s+=3;else if(spo2<=93)s+=2;else if(spo2<=95)s+=1;}
+  s+=o2;
+  if(ts){if(ts<=90)s+=3;else if(ts<=100)s+=2;else if(ts<=110)s+=1;else if(ts>=220)s+=3;}
+  if(fc){if(fc<=40)s+=3;else if(fc<=50)s+=1;else if(fc>=91&&fc<=110)s+=1;else if(fc>=111&&fc<=130)s+=2;else if(fc>=131)s+=3;}
+  if(temp){if(temp<=35.0)s+=3;else if(temp<=36.0)s+=1;else if(temp>=38.1&&temp<=39.0)s+=1;else if(temp>=39.1)s+=2;}
+  s+=cons;
+  const vEl=document.getElementById('news-val'), lEl=document.getElementById('news-lbl');
+  vEl.textContent=s;
+  const[r,c]=s===0?['Baixo risco — monitorização rotina','var(--grn)']:s<=4?['Baixo — reavaliar em 4–6h','var(--grn)']:s<=6?['Médio — avaliação urgente','var(--yel)']:['Alto — resposta emergência imediata','var(--red)'];
+  vEl.style.color=c; lEl.textContent=r;
+}
+function resetNEWS(){
+  ['n-fr','n-spo2','n-ts','n-fc','n-temp'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('n-o2').value='0';
+  document.getElementById('n-cons').value='0';
+  document.getElementById('news-val').textContent='—';
+  document.getElementById('news-val').style.color='var(--acc)';
+  document.getElementById('news-lbl').textContent='Preenche os campos';
+}
+
+// ─── RÁCIOS ──────────────────────────────────────────────
+function calcRacios(){
+  const pao2=parseFloat(document.getElementById('rr-pao2').value);
+  const fio2=parseFloat(document.getElementById('rr-fio2').value);
+  const spo2=parseFloat(document.getElementById('rr-spo2').value);
+  const fr=parseFloat(document.getElementById('rr-fr').value);
+  const paco2=parseFloat(document.getElementById('rr-paco2').value);
+  const etco2=parseFloat(document.getElementById('rr-etco2').value);
+  function set(vid,lid,val,lbl,c){
+    document.getElementById(vid).textContent=val;
+    document.getElementById(vid).style.color=c;
+    document.getElementById(lid).textContent=lbl;
+  }
+  if(pao2&&fio2){
+    const pf=pao2/fio2;
+    const[l,c]=pf>=300?['Normal (≥300)','var(--grn)']:pf>=200?['ARDS Ligeiro (200–299)','var(--yel)']:pf>=100?['ARDS Moderado (100–199)','var(--acc3)']:['ARDS Grave (<100)','var(--red)'];
+    set('rr-pf-val','rr-pf-lbl',pf.toFixed(0),'P/F — '+l,c);
+  } else set('rr-pf-val','rr-pf-lbl','—','P/F — preenche PaO₂ e FiO₂','var(--txt3)');
+  if(spo2&&fio2){
+    const sf=spo2/fio2;
+    const[l,c]=sf>=315?['Normal (≥315)','var(--grn)']:sf>=235?['ARDS Ligeiro','var(--yel)']:sf>=148?['ARDS Moderado','var(--acc3)']:['ARDS Grave','var(--red)'];
+    set('rr-sf-val','rr-sf-lbl',sf.toFixed(0),'S/F — '+l,c);
+  } else set('rr-sf-val','rr-sf-lbl','—','S/F — preenche SpO₂ e FiO₂','var(--txt3)');
+  if(spo2&&fio2&&fr){
+    const rox=(spo2/fio2)/fr;
+    const[l,c]=rox>=4.88?['Baixo risco intubação (≥4.88)','var(--grn)']:['Alto risco falência VNI (<4.88)','var(--red)'];
+    set('rr-rox-val','rr-rox-lbl',rox.toFixed(2),'ROX — '+l,c);
+  } else set('rr-rox-val','rr-rox-lbl','—','ROX — preenche SpO₂, FiO₂ e FR','var(--txt3)');
+  if(paco2&&etco2){
+    const ds=(paco2-etco2)/paco2;
+    const[l,c]=ds<=0.30?['Normal (≤0.30)','var(--grn)']:ds<=0.45?['Moderadamente elevado','var(--yel)']:['Elevado — disfunção pulmonar','var(--red)'];
+    set('rr-ds-val','rr-ds-lbl',ds.toFixed(2),'Dead Space Vd/Vt — '+l,c);
+  } else set('rr-ds-val','rr-ds-lbl','—','Dead Space — preenche PaCO₂ e EtCO₂','var(--txt3)');
+}
+function resetRacios(){
+  ['rr-pao2','rr-fio2','rr-spo2','rr-fr','rr-paco2','rr-etco2'].forEach(id=>document.getElementById(id).value='');
+  calcRacios();
+}
+
+// ─── FÁRMACOS ─────────────────────────────────────────────
+function switchFarm(id,btn){
+  ['sedacao','vasoativos','arritmia','outros'].forEach(x=>document.getElementById('farm-'+x).style.display='none');
+  document.getElementById('farm-'+id).style.display='block';
+  if(btn){document.querySelectorAll('#p-farmacos .itab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+}
+
+const drugs={
+  sedacao:[
+    {n:'Propofol 1%',cls:'Hipnótico',badge:'bt',b:'UCI',dose:'1–4 mg/kg/h',conc:'Puro 10mg/mL (pode diluir D5W)',via:'Perfusão contínua IV',prep:'Seringa/frasco puro — não necessita diluição habitual',alert:'Máx 4mg/kg/h (>48h: síndrome propofol). Vigiar triglicéridos, lipémia, acidose. Contém lipídeos — contabilizar calorias.',nota:'Alvo RASS -2 a -3. Acordar diário recomendado.'},
+    {n:'Midazolam',cls:'Benzodiazepina',badge:'bt',b:'UCI',dose:'0.02–0.1 mg/kg/h',conc:'50mg/50mL SF = 1mg/mL',via:'Perfusão contínua IV',prep:'50mg em 50mL SF',alert:'Acumulação em IR/IH. Síndrome abstinência se desmame rápido. Tolerância rápida.',nota:'Preferir propofol/dexmedetomidina para sedação curta.'},
+    {n:'Dexmedetomidina',cls:'Alfa-2 agonista',badge:'bb',b:'Sedação cooperante',dose:'0.2–1.4 mcg/kg/h',conc:'200mcg/50mL SF = 4mcg/mL',via:'Perfusão contínua IV',prep:'200mcg em 50mL SF',alert:'Bradicardia e hipotensão frequentes. Não usar como anestésico único.',nota:'Alvo RASS -1/-2. Permite comunicação. Excelente para desmame.'},
+    {n:'Fentanil',cls:'Opióide sintético',badge:'bt',b:'Analgesia',dose:'0.5–2 mcg/kg/h',conc:'500mcg/50mL SF = 10mcg/mL',via:'Perfusão contínua IV',prep:'500mcg em 50mL SF',alert:'Rigidez torácica em bólus rápido. Acumulação renal.',nota:'Titular conforme BPS/NRS. Analgesia first approach.'},
+    {n:'Morfina',cls:'Opióide',badge:'bt',b:'Analgesia',dose:'0.02–0.1 mg/kg/h',conc:'50mg/100mL SF = 0.5 mg/mL',via:'Perfusão contínua IV',prep:'50mg em 100mL SF',alert:'Cuidado em IRC (acumulação metabolito ativo). Hipotensão, prurido, náuseas.',nota:''},
+    {n:'Ketamina',cls:'Anestésico dissociativo',badge:'by',b:'Analgesia/sedação',dose:'0.1–0.5 mg/kg/h (analgesia) / 0.5–2 mg/kg/h (sedação)',conc:'500mg/50mL SF = 10mg/mL',via:'Perfusão contínua IV',prep:'500mg em 50mL SF',alert:'Pode aumentar FC e PA. Alucinações — associar benzodiazepina. Não usar em HTA não controlada.',nota:'Broncodilatador. Poupador de opióides. Útil em broncoespasmo.'},
+    {n:'Rocurônio',cls:'Bloqueador neuromuscular',badge:'br',b:'BNM',dose:'IOT: 0.6–1.2 mg/kg bolus / BNM contínuo: 5–12 mcg/kg/min',conc:'Bolus: puro / Contínuo: 200mg/50mL = 4mg/mL',via:'IV bolus / Perfusão contínua',prep:'Contínuo: 200mg em 50mL SF',alert:'🚨 SEMPRE com sedoanalgesia adequada. Monitorizar TOF. Antídoto: Sugammadex.',nota:'IOT rápida: 1.2mg/kg. Reversão: Sugammadex 16mg/kg (dose plena).'},
+  ],
+  vasoativos:[
+    {n:'Noradrenalina',cls:'Vasopressor α1',badge:'br',b:'1ª linha choque sético',dose:'0.01–3 mcg/kg/min',conc:'5mg/250mL G5% = 0.02 mg/mL',via:'Perfusão contínua — VIA CENTRAL',prep:'5mg em 250mL Glicose 5%',alert:'VIA CENTRAL obrigatória. Isquémia periférica em doses altas. Monitorizar SvO₂.',nota:'Alvo PAM ≥65mmHg. Titular lentamente. Combinar dobutamina se baixo DC.'},
+    {n:'Adrenalina',cls:'Catecolamina α+β',badge:'br',b:'Choque/RCP',dose:'0.01–1 mcg/kg/min / RCP: 1mg IV cada 3-5min',conc:'5mg/250mL G5% = 0.02 mg/mL',via:'Perfusão contínua — VIA CENTRAL / Bólus IV em RCP',prep:'5mg em 250mL Glicose 5%',alert:'Arritmias frequentes. Isquémia miocárdica. Hiperglicemia e hiperlactacidemia.',nota:'RCP: 1mg IV a cada 3–5 min. Considerar após 3ª desfibrilhação.'},
+    {n:'Vasopressina',cls:'Hormona antidiurética',badge:'bp',b:'Choque vasoplégico',dose:'0.01–0.04 UI/min (dose fixa)',conc:'20UI/50mL SF = 0.4UI/mL',via:'Perfusão contínua — VIA CENTRAL',prep:'20UI em 50mL SF',alert:'Isquémia cutânea e mesentérica em doses altas. Hiponatrémia.',nota:'Choque vasoplégico pós-CEC. Dose fixa — não titular por peso. Dose max: 0.04UI/min.'},
+    {n:'Dobutamina',cls:'Catecolamina β1',badge:'bb',b:'Inotrópico',dose:'2–20 mcg/kg/min',conc:'250mg/250mL G5% = 1 mg/mL',via:'Perfusão contínua IV',prep:'250mg em 250mL Glicose 5%',alert:'Taquicardia e arritmias. Pode aumentar consumo O₂ miocárdico.',nota:'Inotrópico 1ª linha pós-CEC. Reduz RVS. Combinar com NE se hipotenso.'},
+    {n:'Dopamina',cls:'Catecolamina',badge:'by',b:'Inotrópico/vasopressor',dose:'2–20 mcg/kg/min',conc:'200mg/250mL G5% = 0.8 mg/mL',via:'Perfusão contínua IV',prep:'200mg em 250mL Glicose 5%',alert:'Arritmias mais frequentes vs dobutamina. Menos usada atualmente.',nota:'<5 mcg/kg/min: renal/dopaminérgico · 5-10: inotrópico (β1) · >10: vasoconstritor (α1)'},
+    {n:'Levosimendan',cls:'Sensibilizador cálcio',badge:'bb',b:'IC grave',dose:'Carga: 12mcg/kg em 10min (opcional) / Manutenção: 0.1–0.2 mcg/kg/min por 24h',conc:'12.5mg/50mL D5W = 0.25mg/mL',via:'Perfusão IV — evitar carga se hipotenso',prep:'12.5mg em 50mL D5W',alert:'Hipotensão intensa. Taquicardia. Hipocaliemia.',nota:'Efeito prolongado 7–9 dias. Usar se IC refratária a dobutamina.'},
+    {n:'Nitroprussiato',cls:'Vasodilatador',badge:'by',b:'Crise hipertensiva',dose:'0.3–10 mcg/kg/min',conc:'50mg/250mL D5W = 0.2mg/mL',via:'Perfusão contínua — PROTEGER DA LUZ',prep:'50mg em 250mL D5W — papel de alumínio',alert:'⚠️ Toxicidade por cianeto (>3mcg/kg/min, >72h). Hipotensão grave.',nota:'Só usar na ausência de alternativas. Monitorizar lactato.'},
+  ],
+  arritmia:[
+    {n:'Amiodarona',cls:'Antiarrítmico classe III',badge:'by',b:'FA/TV/FV',dose:'FA/TV estável: 150mg IV em 10min → perfusão manutenção / FV (RCP): 300mg bólus IV',conc:'900mg/250mL G5% = 3.6 mg/mL · ou · 1200mg/250mL G5% = 4.8 mg/mL',via:'Perfusão IV em G5% / Bólus IV em RCP',prep:'<b>Opção 1:</b> 900mg em 250mL Glicose 5%<br><b>Opção 2:</b> 1200mg em 250mL Glicose 5%<br>Bólus RCP: ampola pura 150–300mg',alert:'Hipotensão, bradicardia. Flebite (via central preferencial). QT longo. Tirotoxicidade crónica.',nota:'Diluir SEMPRE em G5% (precipita em SF). Via central para perfusões prolongadas.'},
+    {n:'Adenosina',cls:'Antiarrítmico',badge:'bb',b:'TSV',dose:'6mg IV bólus rápido → repetir 12mg se necessário',conc:'Puro (3mg/mL comercial)',via:'IV bólus muito rápido + flush 20mL SF',prep:'Bólus rápido, flush imediato com SF',alert:'Broncoespasmo (evitar em asma). Assístolia transitória (avisar doente).',nota:'Semi-vida 10 segundos. Administrar no acesso mais proximal possível.'},
+    {n:'Metoprolol',cls:'Beta-bloqueador β1',badge:'bt',b:'Controlo FC FA',dose:'2.5–5mg IV em 2min, repetível cada 5min (máx 15mg)',conc:'Puro (1mg/mL comercial)',via:'IV lento',prep:'Diluir em 10mL SF',alert:'Bradicardia, hipotensão, broncoespasmo.',nota:'FA pós-op com função cardíaca preservada (FE >40%).'},
+    {n:'Digoxina',cls:'Glicosídeo cardíaco',badge:'by',b:'Controlo FC FA',dose:'0.25–0.5mg IV carga → 0.125–0.25mg/dia',conc:'Puro',via:'IV lento (≥10min)',prep:'Diluir em 100mL SF ou D5W',alert:'Margem terapêutica estreita. Toxicidade: náuseas, bradicardia, BAV. Cuidado em IRC.',nota:'Nível terapêutico: 0.8–2 ng/mL. Início ação lento.'},
+    {n:'Sulfato de Magnésio',cls:'Eletrólito/antiarrítmico',badge:'bt',b:'Torsades/hipomagnesiémia',dose:'Torsades: 2g IV em 10min / Reposição: 1–2g IV em 30–60min',conc:'1g/10mL = 100mg/mL',via:'IV lento (diluir para concentração ≤20%)',prep:'2g em 50mL SF (40mg/mL)',alert:'Hipermagnesémia: perda reflexos, paragem respiratória. Antídoto: cálcio gluconato.',nota:'Alvo Mg²⁺ >1 mEq/L em doentes cardíacos. Profilaxia FA pós-op.'},
+  ],
+  outros:[
+    {n:'Insulina (perfusão)',cls:'Hormona',badge:'bt',b:'Controlo glicémico UCI',dose:'0.05–0.1 UI/kg/h inicial. Ajustar conforme protocolo glicémico.',conc:'50UI/100mL SF = 0.5 UI/mL',via:'Perfusão contínua IV (seringa)',prep:'50UI em 100mL SF',alert:'Hipoglicemia: monitorizar glicemia horária. Pré-purgar tubagem (insulina adsorve ao PVC).',nota:'Alvo UCI: 140–180 mg/dL. Pré-purgar 20mL antes de iniciar perfusão.'},
+    {n:'Heparina não fracionada',cls:'Anticoagulante',badge:'by',b:'Anticoagulação',dose:'Protocolo local (geralmente bólus 5000UI + perfusão 1000-2000UI/h)',conc:'25000UI/50mL SF = 500UI/mL',via:'Perfusão contínua IV',prep:'25000UI em 50mL SF',alert:'Hemorragia. TIH (monitorizar plaquetas dia 4–14). Antagonista: protamina (1mg/100UI heparina).',nota:'Monitorizar TTPa a cada 6h. Alvo TTPa 60–100s (2x normal).'},
+    {n:'Furosemida',cls:'Diurético de ansa',badge:'bb',b:'Sobrecarga hídrica',dose:'20–80mg IV bólus / Perfusão: 5–20mg/h',conc:'Bólus: puro / Perfusão: 250mg/50mL SF = 5mg/mL',via:'IV bólus ou perfusão contínua',prep:'Perfusão: 250mg em 50mL SF',alert:'Hipocaliemia, hiponatrémia, alcalose. Ototoxicidade em doses altas/rápidas.',nota:'Monitorizar ionograma e débito urinário. Repor K⁺ se necessário.'},
+    {n:'Protamina',cls:'Antagonista heparina',badge:'br',b:'Reversão heparina',dose:'1mg por 100UI heparina administrada nas últimas 2-3h (máx 50mg)',conc:'Puro (10mg/mL)',via:'IV lento (≤5mg/min)',prep:'Diluir em 50mL SF. Administrar lentamente.',alert:'⚠️ Anafilaxia/reação grave: hipotensão, bradicardia, vasoconstrição pulmonar. Ter adrenalina preparada.',nota:'Administração lenta obrigatória. Monitorizar ACT antes e após. Dose máxima: 50mg.'},
+    {n:'KCl (cloreto de potássio)',cls:'Eletrólito',badge:'bt',b:'Hipocaliemia',dose:'10–20 mEq/h (central). Máx 40 mEq/h em emergência.',conc:'NUNCA puro IV — diluir sempre: 20mEq/100mL SF',via:'VIA CENTRAL para concentrações >40mEq/L',prep:'20mEq em 100mL SF (VVC) ou 20mEq em 500mL SF (periférico)',alert:'🚨 NUNCA administrar IV direto (paragem cardíaca). VIA CENTRAL obrigatória para ≥20mEq/100mL.',nota:'Alvo K⁺ pós-CEC: >4.0–4.5 mEq/L. Repor lentamente. Monitorizar ECG.'},
+    {n:'Gluconato de Cálcio',cls:'Eletrólito',badge:'bt',b:'Hipocalcémia/antagonista Mg',dose:'1–2g IV em 10min',conc:'100mg/mL (10%) comercial',via:'IV lento',prep:'Diluir 1g em 50mL SF',alert:'Bradicardia se rápido. Incompatível com bicarbonato e fosfato.',nota:'Antídoto hipermagnesémia. Repor após transfusões maciças.'},
+  ]
+};
+
+function renderDrugs(){
+  Object.keys(drugs).forEach(cat=>{
+    const el=document.getElementById('farm-'+cat);
+    el.innerHTML=drugs[cat].map((d,i)=>`
+      <div class="drug-card" id="dc-${cat}-${i}">
+        <div class="drug-hd" onclick="toggleDrug('${cat}',${i})">
+          <div><div class="drug-name">${d.n}</div><div class="drug-class">${d.cls}</div></div>
+          <div style="display:flex;align-items:center;gap:6px"><span class="badge ${d.badge}">${d.b}</span><span style="color:var(--txt3);font-size:0.75rem">▼</span></div>
+        </div>
+        <div class="drug-body">
+          <div class="drug-row"><span class="drug-row-lbl">Dose</span><span class="drug-row-val">${d.dose}</span></div>
+          <div class="drug-row"><span class="drug-row-lbl">Concentração</span><span class="drug-row-val">${d.conc}</span></div>
+          <div class="drug-row"><span class="drug-row-lbl">Preparação</span><span class="drug-row-val">${d.prep}</span></div>
+          <div class="drug-row"><span class="drug-row-lbl">Via</span><span class="drug-row-val">${d.via}</span></div>
+          ${d.nota?`<div class="drug-row"><span class="drug-row-lbl">Nota</span><span class="drug-row-val" style="color:var(--acc2)">${d.nota}</span></div>`:''}
+          ${d.alert?`<div class="drug-alert">⚠️ ${d.alert}</div>`:''}
+        </div>
+      </div>`).join('');
+  });
+}
+function toggleDrug(cat,i){
+  const el=document.getElementById(`dc-${cat}-${i}`);
+  el.classList.toggle('open');
+}
+
+// ─── ARRITMIAS ───────────────────────────────────────────
+const arritmias=[
+  {nome:'FA pós-operatória',cat:'Pós-CEC',badge:'by',fc:'100–160 bpm',ritmo:'Irregularmente irregular',p:'Ausente — linha ondulada',qrs:'Estreito (<120ms)',causa:'Inflamação pericárdica, hipomagnesiémia, hipocaliemia. Ocorre em 20–40% das cirurgias cardíacas, geralmente POD1–3.',trat:'<b>1ª linha:</b> Amiodarona 150mg IV em 10min → perfusão 1mg/min 6h → 0.5mg/min 18h.<br><b>Alternativa:</b> Metoprolol IV se FE preservada.<br><b>Instável:</b> Cardioversão sincronizada 100–200J.<br><b>Corrigir:</b> Mg²⁺ >1 mEq/L, K⁺ >4.0–4.5 mEq/L.',alerta:false},
+  {nome:'Pace dependente',cat:'Pós-CEC',badge:'bp',fc:'Programada (60–90 bpm)',ritmo:'Regular — fio epicárdico',p:'Espícula antes do QRS/P',qrs:'Largo se pace ventricular',causa:'BAV ou disfunção sinusal pós-CEC. Fios epicárdicos temporários colocados intra-operatoriamente.',trat:'Verificar captura (espícula → QRS). Verificar sensibilidade. Verificar limiar de estimulação diariamente. Não retirar fios sem avaliação médica. Avaliar necessidade de pace definitivo se BAV persistente (≥7–10 dias).',alerta:false},
+  {nome:'Ritmo juncional',cat:'Pós-CEC',badge:'by',fc:'40–60 bpm (escape) / >60 (acelerado)',ritmo:'Regular',p:'Ausente, invertida ou retrogradamente após QRS',qrs:'Estreito',causa:'Lesão/edema nódulo sinusal. Hipotermia residual. Isquémia AV. Comum primeiras horas pós-CEC.',trat:'Se assintomático e FC adequada: vigilância. Se bradicardia sintomática: pace temporário auricular (restaura sincronia AV). Corrigir causas reversíveis.',alerta:false},
+  {nome:'Taquicardia Ventricular (TV)',cat:'Ventricular',badge:'br',fc:'100–250 bpm',ritmo:'Regular (geralmente)',p:'Dissociação AV — P independente do QRS',qrs:'Largo >120ms — morfologia aberrante',causa:'Isquémia pós-CEC, hipocaliemia, hipomagnesiémia, QT longo, lesão miocárdica.',trat:'<b>Com pulso e estável:</b> Amiodarona 150mg IV em 10min → perfusão.<br><b>Com pulso, instável:</b> Cardioversão sincronizada 100–200J.<br><b>Sem pulso:</b> Desfibrilhação 200J + RCP. Adrenalina 1mg IV cada 3–5min.<br><b>Corrigir:</b> K⁺ >4.5, Mg²⁺ >1.',alerta:true},
+  {nome:'Fibrilhação Ventricular (FV)',cat:'Ventricular',badge:'br',fc:'Indeterminável',ritmo:'Caótico, irregular',p:'Ausente',qrs:'Ondas irregulares de amplitude variável',causa:'Isquémia grave, pós-CEC, hipotermia, choque elétrico.',trat:'🚨 <b>PARAGEM CARDÍACA</b><br>RCP imediata → Desfibrilhação 200J bifásico → Adrenalina 1mg IV cada 3–5min → Amiodarona 300mg IV após 3ª desfibrilhação. Ciclos 2min.',alerta:true},
+  {nome:'BAV 3º Grau (Completo)',cat:'Bloqueio',badge:'br',fc:'Auricular normal · Ventricular 20–40 bpm',ritmo:'Dissociação AV completa — P e QRS independentes',p:'Presente mas sem relação com QRS',qrs:'Largo se escape ventricular',causa:'Edema/isquémia do sistema de condução pós-CEC. Especialmente pós-cirurgia valvular aórtica, septal ou anel mitral.',trat:'⚠️ <b>Pace temporário urgente.</b> Isoproterenol se necessário enquanto aguarda. Avaliar pace definitivo — aguardar 7–10 dias para recuperação espontânea. Atropina tem efeito limitado em BAV infranodal.',alerta:true},
+  {nome:'BAV 2º Grau Mobitz II',cat:'Bloqueio',badge:'br',fc:'Baixa',ritmo:'PR fixo com QRS ocasionalmente ausente',p:'Presente — P sem QRS de forma intermitente',qrs:'Largo (geralmente)',causa:'Pós-cirurgia valvular, isquémia sistema de condução.',trat:'⚠️ Alto risco de progressão para BAV completo. Pace temporário urgente. Atropina tem efeito limitado.',alerta:true},
+  {nome:'BAV 2º Grau Mobitz I (Wenckebach)',cat:'Bloqueio',badge:'by',fc:'Variável',ritmo:'PR progressivamente mais longo até drop do QRS',p:'Presente. Algumas P sem QRS',qrs:'Estreito',causa:'EAM inferior, edema nodal pós-CEC, digoxina, betabloqueadores.',trat:'Geralmente transitório pós-CEC. Vigilância. Atropina 0.5mg IV se sintomático. Suspender fármacos causadores.',alerta:false},
+  {nome:'Torsades de Pointes',cat:'Ventricular',badge:'br',fc:'200–250 bpm',ritmo:'Eixo QRS oscila em torno da isoeléctrica',p:'Indistinguível',qrs:'Largo — amplitude e eixo variáveis',causa:'QT longo (amiodarona, antipsicóticos), hipomagnesiémia, hipocaliemia. Frequente no contexto pós-op cardíaco.',trat:'<b>1ª linha:</b> MgSO₄ 2g IV em 10min.<br>Suspender fármacos que prolongam QT.<br>Pace para aumentar FC (encurta QT).<br>Desfibrilhação se instável.<br>K⁺ alvo >4.5 mEq/L.',alerta:true},
+  {nome:'Bradicardia sinusal',cat:'Bradicardia',badge:'bb',fc:'<60 bpm',ritmo:'Regular',p:'Normal — cada P seguida de QRS',qrs:'Estreito, normal',causa:'Betabloqueadores, hipotermia residual, vagotonia, disfunção sinusal pós-CEC.',trat:'Se assintomático: observação. Se sintomático: Atropina 0.5mg IV (máx 3mg). Pace temporário auricular se refratário.',alerta:false},
+];
+
+// ─── ECG SVG TRACES ──────────────────────────────────────
+// Each path is designed to tile seamlessly (doubled for infinite scroll)
+const ecgTraces = {
+  // Normal sinus: P-QRS-T well defined, regular
+  sinusal: {cls:'ecg-anim-slow', color:'ecg-trace', path:`
+    M0,35 L8,35 L10,32 L12,35
+    L14,35 L15,20 L16,5 L17,60 L18,10 L19,35
+    L22,35 L24,30 L26,35
+    L60,35
+    L68,35 L70,32 L72,35
+    L74,35 L75,20 L76,5 L77,60 L78,10 L79,35
+    L82,35 L84,30 L86,35
+    L120,35`},
+
+  // FA: no P waves, irregular QRS, chaotic baseline
+  fa: {cls:'ecg-anim', color:'ecg-trace-warn', path:`
+    M0,35 L3,34 L5,36 L7,33 L9,37 L11,34
+    L12,35 L13,18 L14,5 L15,58 L16,12 L17,35
+    L19,36 L21,33 L24,35 L26,34 L28,36 L29,33
+    L31,36 L32,22 L33,8 L34,55 L35,14 L36,35
+    L38,34 L41,36 L44,33 L46,37 L48,34
+    L50,35 L51,19 L52,6 L53,57 L54,13 L55,35
+    L57,36 L59,34 L61,33 L63,37 L65,35 L67,33 L69,36
+    L72,35 L73,21 L74,7 L75,56 L76,15 L77,35
+    L79,34 L82,36 L85,33 L87,37 L89,34
+    L90,35 L91,18 L92,5 L93,58 L94,12 L95,35
+    L97,36 L99,33 L102,35 L104,34 L106,36`},
+
+  // Flutter: regular sawtooth P waves (300bpm atrial), 2:1 block
+  flutter: {cls:'ecg-anim', color:'ecg-trace-warn', path:`
+    M0,35 L5,28 L10,42 L15,28 L20,35
+    L21,18 L22,5 L23,58 L24,12 L25,35
+    L30,28 L35,42 L40,28 L45,35
+    L46,22 L47,8 L48,55 L49,15 L50,35
+    L55,28 L60,42 L65,28 L70,35
+    L71,18 L72,5 L73,58 L74,12 L75,35
+    L80,28 L85,42 L90,28 L95,35
+    L96,22 L97,8 L98,55 L99,15 L100,35
+    L105,28 L110,42 L115,28 L120,35`},
+
+  // Pace: vertical spike before each QRS
+  pace: {cls:'ecg-anim-slow', color:'ecg-trace', path:`
+    M0,35 L10,35
+    L11,10 L11,60 L12,35
+    L13,15 L14,5 L15,58 L16,12 L17,35
+    L20,32 L22,35
+    L50,35
+    L51,10 L51,60 L52,35
+    L53,15 L54,5 L55,58 L56,12 L57,35
+    L60,32 L62,35
+    L110,35
+    L111,10 L111,60 L112,35
+    L113,15 L114,5 L115,58 L116,12 L117,35
+    L120,32 L122,35`},
+
+  // Juncional: narrow QRS, no visible P, slower rate
+  juncional: {cls:'ecg-anim-slow', color:'ecg-trace-warn', path:`
+    M0,35 L15,35
+    L16,20 L17,5 L18,60 L19,10 L20,35
+    L22,31 L24,35
+    L70,35
+    L71,20 L72,5 L73,60 L74,10 L75,35
+    L77,31 L79,35
+    L130,35
+    L131,20 L132,5 L133,60 L134,10 L135,35`},
+
+  // TV: wide bizarre QRS, fast, no P
+  tv: {cls:'ecg-anim-fast', color:'ecg-trace-danger', path:`
+    M0,35 L4,35
+    L5,15 L7,55 L9,10 L11,50 L13,35
+    L17,35
+    L18,15 L20,55 L22,10 L24,50 L26,35
+    L30,35
+    L31,15 L33,55 L35,10 L37,50 L39,35
+    L43,35
+    L44,15 L46,55 L48,10 L50,50 L52,35
+    L56,35
+    L57,15 L59,55 L61,10 L63,50 L65,35
+    L69,35
+    L70,15 L72,55 L74,10 L76,50 L78,35
+    L82,35
+    L83,15 L85,55 L87,10 L89,50 L91,35`},
+
+  // FV: chaotic, no recognizable waves
+  fv: {cls:'ecg-anim-chaos', color:'ecg-trace-danger', path:`
+    M0,35 L2,20 L4,48 L6,15 L8,55 L10,30
+    L12,42 L14,18 L16,52 L18,25 L20,45
+    L22,12 L24,50 L26,38 L28,22 L30,48
+    L32,17 L34,55 L36,28 L38,42 L40,15
+    L42,52 L44,30 L46,48 L48,18 L50,40
+    L52,22 L54,55 L56,32 L58,48 L60,15
+    L62,45 L64,20 L66,52 L68,28 L70,42
+    L72,15 L74,50 L76,35 L78,18 L80,48
+    L82,25 L84,42 L86,12 L88,55 L90,30
+    L92,45 L94,18 L96,52 L98,28 L100,40`},
+
+  // BAV3: P waves regular (faster), QRS slow and independent
+  bav3: {cls:'ecg-anim-slow', color:'ecg-trace-danger', path:`
+    M0,35 L4,35 L5,30 L6,35
+    L10,35 L11,30 L12,35
+    L16,35 L17,30 L18,35
+    L20,35 L21,18 L22,5 L23,60 L24,12 L25,35
+    L26,35 L27,30 L28,35
+    L32,35 L33,30 L34,35
+    L38,35 L39,30 L40,35
+    L44,35 L45,30 L46,35
+    L50,35 L51,18 L52,5 L53,60 L54,12 L55,35
+    L56,35 L57,30 L58,35
+    L62,35 L63,30 L64,35
+    L68,35 L69,30 L70,35
+    L74,35 L75,30 L76,35
+    L80,35 L81,18 L82,5 L83,60 L84,12 L85,35`},
+
+  // Mobitz2: PR fixed, occasional dropped QRS
+  mobitz2: {cls:'ecg-anim-slow', color:'ecg-trace-danger', path:`
+    M0,35 L4,35 L5,30 L6,35
+    L10,35 L11,20 L12,5 L13,58 L14,12 L15,35
+    L18,32 L20,35
+    L24,35 L25,30 L26,35
+    L30,35 L31,20 L32,5 L33,58 L34,12 L35,35
+    L38,32 L40,35
+    L44,35 L45,30 L46,35
+    L50,35 L51,30 L52,35
+    L56,35 L57,20 L58,5 L59,58 L60,12 L61,35
+    L64,32 L66,35
+    L70,35 L71,30 L72,35
+    L76,35 L77,20 L78,5 L79,58 L80,12 L81,35
+    L84,32 L86,35`},
+
+  // Mobitz1: PR gets longer then dropped
+  mobitz1: {cls:'ecg-anim-slow', color:'ecg-trace-warn', path:`
+    M0,35 L3,35 L4,31 L5,35
+    L8,35 L9,22 L10,7 L11,57 L12,13 L13,35 L16,33 L18,35
+    L21,35 L22,31 L23,35
+    L26,35 L27,24 L28,9 L29,56 L30,14 L31,35 L34,33 L36,35
+    L39,35 L40,31 L41,35
+    L44,35 L45,26 L46,10 L47,55 L48,15 L49,35 L52,33 L54,35
+    L57,35 L58,31 L59,35
+    L62,35
+    L66,35 L67,31 L68,35
+    L71,35 L72,22 L73,7 L74,57 L75,13 L76,35 L79,33 L81,35
+    L84,35 L85,31 L86,35`},
+
+  // Torsades: twisting QRS axis
+  torsades: {cls:'ecg-anim-fast', color:'ecg-trace-danger', path:`
+    M0,35 L2,30 L4,20 L6,8 L8,18 L10,28 L12,35
+    L14,42 L16,52 L18,62 L20,52 L22,42 L24,35
+    L26,28 L28,18 L30,8 L32,18 L34,28 L36,35
+    L38,42 L40,55 L42,65 L44,52 L46,40 L48,35
+    L50,28 L52,15 L54,5 L56,15 L58,28 L60,35
+    L62,45 L64,55 L66,62 L68,50 L70,40 L72,35
+    L74,28 L76,18 L78,8 L80,20 L82,30 L84,35
+    L86,42 L88,52 L90,60 L92,48 L94,38 L96,35`},
+
+  // Bradicardia: normal QRS but very slow
+  bradicardia: {cls:'ecg-anim-slow', color:'ecg-trace-warn', path:`
+    M0,35 L25,35 L27,32 L29,35
+    L31,35 L32,18 L33,5 L34,60 L35,10 L36,35
+    L39,31 L41,35
+    L100,35 L102,32 L104,35
+    L106,35 L107,18 L108,5 L109,60 L110,10 L111,35
+    L114,31 L116,35
+    L175,35`},
+};
+
+function makeECG(key, label){
+  const t = ecgTraces[key];
+  if(!t) return '';
+  const path = t.path.trim();
+  // Double the path for seamless looping
+  return `<div class="ecg-wrap">
+    <div class="ecg-label">${label}</div>
+    <svg class="ecg-svg" height="70" viewBox="0 0 240 70" preserveAspectRatio="none">
+      <defs>
+        <pattern id="grid-${key}" width="10" height="10" patternUnits="userSpaceOnUse">
+          <path d="M10,0 L0,0 L0,10" fill="none" stroke="#0d2b1a" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="240" height="70" fill="url(#grid-${key})"/>
+      <g class="${t.cls}">
+        <path class="${t.color}" d="${path}"/>
+        <path class="${t.color}" d="${path}" transform="translate(120,0)"/>
+      </g>
+    </svg>
+  </div>`;
+}
+
+function renderArritmias(){
+  const cats=['Pós-CEC','Ventricular','Bloqueio','Bradicardia'];
+  const traceKey = [
+    'fa','pace','juncional','tv','fv','bav3','mobitz2','mobitz1','torsades','bradicardia'
+  ];
+  const traceLabel = [
+    'FA pós-op','Pace ventricular','Juncional','TV','FV',
+    'BAV 3º Grau','Mobitz II','Mobitz I (Wenckebach)','Torsades de Pointes','Bradicardia sinusal'
+  ];
+  let html='';
+  cats.forEach(cat=>{
+    const lista=arritmias.filter(a=>a.cat===cat);
+    html+=`<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--txt3);margin:14px 0 7px;padding-left:2px">${cat}</div>`;
+    lista.forEach(a=>{
+      const gi=arritmias.indexOf(a);
+      const tk=traceKey[gi];
+      const tl=traceLabel[gi];
+      html+=`<div class="acc-item" id="ai-${gi}">
+        <div class="acc-hd" onclick="toggleAcc(${gi})">
+          <div class="acc-hd-left">
+            <span style="font-size:1rem">${a.alerta?'⚠️':'🫀'}</span>
+            <span class="acc-hd-title">${a.nome}</span>
+          </div>
+          <div class="acc-hd-right">
+            <span class="badge ${a.badge}">${a.fc}</span>
+            <span class="acc-chevron">▼</span>
+          </div>
+        </div>
+        <div class="acc-body">
+          ${makeECG(tk,tl)}
+          <div class="acc-row">
+            <div><div class="acc-lbl">Ritmo</div><div class="acc-val">${a.ritmo}</div></div>
+            <div><div class="acc-lbl">Onda P</div><div class="acc-val">${a.p}</div></div>
+            <div><div class="acc-lbl">QRS</div><div class="acc-val">${a.qrs}</div></div>
+            <div><div class="acc-lbl">Causas</div><div class="acc-val">${a.causa}</div></div>
+          </div>
+          <div class="trat-box"><div class="trat-box-title">Tratamento</div>${a.trat}</div>
+        </div>
+      </div>`;
+    });
+  });
+  document.getElementById('arritmias-list').innerHTML=html;
+}
+function toggleAcc(i){
+  document.getElementById('ai-'+i).classList.toggle('open');
+}
+
+// ─── PROTOCOLOS ──────────────────────────────────────────
+const protos=[
+  {id:'rcp',titulo:'🚨 RCP Adulto — ALS',badge:'br',b:'Paragem cardíaca',
+   steps:[
+     {t:'Confirmar paragem',txt:'Verificar responsividade (chamar, estimular). Pedir ajuda. Chamar equipa de emergência.'},
+     {t:'Iniciar RCP',txt:'30 compressões : 2 ventilações. Compressões: 5–6cm de profundidade, 100–120/min, reexpansão completa. Minimizar interrupções (<10seg).'},
+     {t:'Analisar ritmo',txt:'Colocar desfibrilhador assim que disponível. Analisar ritmo a cada 2 minutos de RCP.'},
+     {t:'Ritmo desfibrilhável? (FV/TV sem pulso)',txt:'<b>SIM:</b> Desfibrilhação 200J bifásico → RCP imediata 2min → repetir análise.<br><b>NÃO (Assistolia/AEsP):</b> RCP + causas reversíveis (4H/4T).'},
+     {t:'Adrenalina',txt:'<b>Ritmo não desfibrilhável:</b> 1mg IV/IO assim que acesso disponível → cada 3–5min.<br><b>Ritmo desfibrilhável:</b> 1mg IV após 3ª desfibrilhação → cada 3–5min.'},
+     {t:'Amiodarona',txt:'<b>Ritmo desfibrilhável:</b> 300mg IV em bólus após 3ª desfibrilhação. Pode repetir 150mg após 5ª.'},
+     {t:'4H / 4T (causas reversíveis)',txt:'<b>4H:</b> Hipoxia · Hipovolemia · Hipo/Hipercaliemia · Hipotermia<br><b>4T:</b> Tamponamento · Tóxicos · Tromboembolismo · Tensão (pneumotórax)'},
+   ],
+   notas:'Acesso IV/IO precoce. Capnografia contínua (ETCO₂ >10mmHg = RCP eficaz). Considerar ecografia. Não interromper RCP durante administração de fármacos.'},
+  {id:'fa',titulo:'⚡ FA pós-op — Protocolo',badge:'by',b:'FA pós-CEC',
+   steps:[
+     {t:'Avaliar hemodinâmica',txt:'TA, FC, SpO₂, sintomas. Instável (PA <90mmHg, ICC, síncope)? → Cardioversão imediata.'},
+     {t:'Corrigir reversíveis',txt:'Mg²⁺ < 1mEq/L → MgSO₄ 2g IV em 20min. K⁺ < 4.0 → repor. Dor, febre, hipovolemia → tratar.'},
+     {t:'Controlo de frequência (FC ≥110)',txt:'<b>FE preservada (>40%):</b> Metoprolol 2.5–5mg IV lento cada 5min (máx 15mg).<br><b>FE reduzida:</b> Amiodarona 150mg IV em 10min → perfusão 1mg/min.'},
+     {t:'Cardioversão farmacológica',txt:'Amiodarona 150mg IV 10min → 1mg/min 6h → 0.5mg/min 18h (total 900mg/24h). Se <48h de evolução pode tentar cardioversão elétrica.'},
+     {t:'Cardioversão elétrica (se instável ou refratário)',txt:'Sedação/analgesia. Modo sincronizado. Iniciar 100–200J bifásico. Repetir com energia crescente se necessário.'},
+   ],
+   notas:'Anticoagulação: se FA >48h ou duração desconhecida, anticoagular antes de cardioversão. Avaliar CHA₂DS₂-VASc. A FA pós-op tem geralmente resolução espontânea em 6–12 semanas.'},
+  {id:'tv',titulo:'⚡ TV com Pulso',badge:'br',b:'Emergência',
+   steps:[
+     {t:'Confirmar ritmo e pulso',txt:'ECG 12 derivações. Confirmar TV vs TSV aberrante. Verificar pulso.'},
+     {t:'Hemodinamicamente estável?',txt:'<b>Instável</b> (PA <90mmHg, síncope, EAP, angina): → Cardioversão sincronizada IMEDIATA.<br><b>Estável:</b> Tratamento farmacológico.'},
+     {t:'TV estável — Farmacológico',txt:'Amiodarona 150mg IV em 10min → perfusão 1mg/min 6h. Corrigir K⁺ e Mg²⁺.'},
+     {t:'TV instável — Cardioversão sincronizada',txt:'Sedação (midazolam + fentanil). Modo SINCRONIZADO obrigatório. 100–200J bifásico. Repetir com energia crescente.'},
+     {t:'TV sem pulso',txt:'→ Seguir protocolo RCP. Desfibrilhação não sincronizada 200J + RCP.'},
+   ],
+   notas:'Se recorrente: corrigir eletrólitos (K⁺>4.5, Mg²⁺>1). Procurar causa isquémica. Amiodarona manutenção. Consulta cardiologia para ablação ou CDI.'},
+  {id:'bradicardia',titulo:'🐢 Bradicardia Sintomática',badge:'bb',b:'Urgência',
+   steps:[
+     {t:'Avaliar sintomas',txt:'Sintomático: síncope, pré-síncope, hipotensão, IC. Se assintomático e FC >40: observar.'},
+     {t:'Atropina',txt:'0.5mg IV bolus, repetir cada 3–5min (máx 3mg). Ineficaz em BAV infranodal (Mobitz II, BAV 3º grau).'},
+     {t:'Se refratário a atropina',txt:'Pace temporário transcutâneo (não invasivo): 60–80 bpm, 50–100mA — doloroso, sedoanalgesia.<br>Isoproterenol 2–10mcg/min IV (se aguarda pace).'},
+     {t:'Pace temporário transvenoso',txt:'Indicação definitiva se BAV 2º Mobitz II ou 3º grau. Acesso central (subclávia/jugular). Alvo: captura consistente.'},
+   ],
+   notas:'Causas reversíveis: betabloqueadores, digoxina, hipoxia, hipotermia, hipocaliemia, isquémia inferior. Suspender fármacos causadores.'},
+  {id:'hipercaliemia',titulo:'⚗️ Hipercaliemia Grave (K⁺ > 6.5)',badge:'br',b:'Urgência metabólica',
+   steps:[
+     {t:'Estabilizar membrana cardíaca',txt:'Gluconato de cálcio 1g IV em 5–10min (efeito imediato, duração 30–60min). Repetir se necessário. Não baixa K⁺.'},
+     {t:'Redistribuição intracelular',txt:'Insulina 10UI IV + Glucose 50% 50mL. Salbutamol 10–20mg nebulizado (adjuvante). Bicarbonato 8.4% 50–100mEq IV se acidose.'},
+     {t:'Eliminação de K⁺',txt:'Furosemida IV se diurese preservada. Hemodiálise emergente se refratário ou oligúria.'},
+     {t:'Monitorização',txt:'ECG contínuo (ondas T em tenda, QRS alargado, onda sinusoidal = emergência). Ionograma 1–2h após tratamento.'},
+   ],
+   notas:'ECG: onda T em tenda > PR longo > QRS alargado > onda sinusoidal > FV/assistolia. Gluconato de cálcio NÃO baixa o K⁺ — apenas protege o coração.'},
+];
+
+function renderProtos(){
+  document.getElementById('protos-list').innerHTML=protos.map(p=>`
+    <div class="proto" id="pr-${p.id}">
+      <div class="proto-hd" onclick="toggleProto('${p.id}')">
+        <div><span style="font-size:1.05rem;font-weight:700">${p.titulo}</span><br><span class="badge ${p.badge}" style="margin-top:4px">${p.b}</span></div>
+        <span style="color:var(--txt3);font-size:0.8rem">▼</span>
+      </div>
+      <div class="proto-body">
+        ${p.steps.map((s,i)=>`<div class="step"><div class="step-n">${i+1}</div><div class="step-txt"><b>${s.t}</b><br>${s.txt}</div></div>`).join('')}
+        ${p.notas?`<div class="info-box">ℹ️ ${p.notas}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+function toggleProto(id){
+  document.getElementById('pr-'+id).classList.toggle('open');
+}
+function openProto(id){
+  const el=document.getElementById('pr-'+id);
+  if(el) el.classList.add('open');
+}
+
+// ─── LABORATÓRIO ─────────────────────────────────────────
+function switchLab(id,btn){
+  ['hematologia','bioquimica','coagulacao','gasimetria','cardiacos'].forEach(x=>document.getElementById('lab-'+x).style.display='none');
+  document.getElementById('lab-'+id).style.display='block';
+  if(btn){document.querySelectorAll('#p-lab .itab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+}
+
+const labData={
+  hematologia:[
+    {n:'Hemoglobina',r:'H: 13.5–17.5 · M: 12–16',u:'g/dL',a:'<7 → transfusão (alvo UCI: ≥7–8 g/dL)'},
+    {n:'Hematócrito',r:'H: 41–53% · M: 36–46%',u:'%',a:''},
+    {n:'Eritrócitos',r:'H: 4.5–5.9 · M: 4.1–5.1',u:'×10⁶/μL',a:''},
+    {n:'Leucócitos',r:'4.5–11.0',u:'×10³/μL',a:'<4 leucopenia · >11 leucocitose · >25 infeção grave/LMC'},
+    {n:'Neutrófilos',r:'1.8–7.7 (40–75%)',u:'×10³/μL',a:'<0.5 agranulocitose grave'},
+    {n:'Plaquetas',r:'150–400',u:'×10³/μL',a:'<100 trombocitopenia · <50 risco hemorrágico elevado · <10 espontânea'},
+    {n:'VGM',r:'80–100',u:'fL',a:'<80 microcítica · >100 macrocítica'},
+    {n:'PCR',r:'<5',u:'mg/L',a:'>50 infeção provável · >200 infeção bacteriana grave'},
+    {n:'Procalcitonina',r:'<0.5',u:'ng/mL',a:'>0.5 suspeita bacteriana · >2 sépsis · >10 sépsis grave'},
+  ],
+  bioquimica:[
+    {n:'Sódio (Na⁺)',r:'136–145',u:'mEq/L',a:'<130 hiponatremia grave · >150 hipernatremia grave'},
+    {n:'Potássio (K⁺)',r:'3.5–5.0',u:'mEq/L',a:'<3.0 hipocaliemia grave · >5.5 hipercaliemia · >6.5 EMERGÊNCIA'},
+    {n:'Cloro (Cl⁻)',r:'98–106',u:'mEq/L',a:''},
+    {n:'Cálcio ionizado',r:'1.15–1.35',u:'mmol/L',a:'<0.9 hipocalcémia grave → repor gluconato Ca'},
+    {n:'Magnésio (Mg²⁺)',r:'0.7–1.0 (1.4–2.0)',u:'mmol/L (mEq/L)',a:'<0.7 hipomagnesiémia — risco arritmias. Alvo pós-CEC: >1 mEq/L'},
+    {n:'Fósforo',r:'0.81–1.45',u:'mmol/L',a:'<0.32 grave — insuficiência respiratória'},
+    {n:'Ureia',r:'2.5–7.1',u:'mmol/L',a:'>20 urémia grave'},
+    {n:'Creatinina',r:'H: 62–115 · M: 53–97',u:'μmol/L',a:'>200 IRA moderada · >442 IRA grave (estádio 3 KDIGO)'},
+    {n:'Glicemia',r:'3.9–6.1 (jejum)',u:'mmol/L ou 70–110 mg/dL',a:'<3.9 hipoglicémia. UCI alvo: 140–180 mg/dL (7.8–10 mmol/L)'},
+    {n:'Lactato',r:'0.5–1.6',u:'mmol/L',a:'>2 hiperlactacidémia · >4 choque láctico grave'},
+    {n:'Albumina',r:'35–50',u:'g/L',a:'<25 hipoalbuminémia grave — edema, má cicatrização'},
+    {n:'Bilirrubina total',r:'3.4–20.5',u:'μmol/L',a:'>50 icterícia evidente · >200 insuficiência hepática'},
+    {n:'ALT (TGP)',r:'H: <40 · M: <35',u:'UI/L',a:'>3× normal = lesão hepática significativa'},
+    {n:'AST (TGO)',r:'H: <40 · M: <32',u:'UI/L',a:''},
+  ],
+  coagulacao:[
+    {n:'TP/INR',r:'11–14s / INR: 0.8–1.2',u:'s / ratio',a:'INR >1.5 coagulopatia · >2.0 risco hemorrágico · >3.5 grave'},
+    {n:'TTPa',r:'25–35',u:'s',a:'Alvo anticoagulação heparina: 60–100s (2x normal)'},
+    {n:'Fibrinogénio',r:'2.0–4.0',u:'g/L',a:'<1.5 risco hemorrágico elevado · <1.0 grave'},
+    {n:'D-Dímeros',r:'<0.5',u:'mg/L FEU',a:'>0.5 suspeita TEP/TVP (pouco específico). Muito elevado em CID.'},
+    {n:'Plaquetas',r:'150–400',u:'×10³/μL',a:'<50 risco hemorrágico elevado em procedimentos'},
+    {n:'ACT (tempo coag. ativado)',r:'70–180 (normal)',u:'segundos',a:'Alvo durante CEC: >400s. Alvo pós-CEC: <180s antes de protamina.'},
+  ],
+  gasimetria:[
+    {n:'pH',r:'7.35–7.45',u:'',a:'<7.35 acidose · <7.20 acidose grave · >7.45 alcalose'},
+    {n:'PaCO₂',r:'35–45',u:'mmHg',a:'<35 alcalose resp. · >45 acidose resp. · >60 insuficiência ventilatória grave'},
+    {n:'PaO₂',r:'80–100',u:'mmHg',a:'<60 hipoxémia grave (FiO₂ 21%). P/F <300 lesão pulmonar.'},
+    {n:'HCO₃⁻',r:'22–26',u:'mEq/L',a:'<18 acidose metabólica · >28 alcalose metabólica'},
+    {n:'BE (Base Excess)',r:'-2 a +2',u:'mEq/L',a:'<-4 acidose metabólica · <-10 grave'},
+    {n:'SatO₂',r:'95–99%',u:'%',a:'<90% hipoxémia. Alvo UCI: ≥94%.'},
+    {n:'Lactato',r:'<1.6',u:'mmol/L',a:'>2 hipoperfusão · >4 choque láctico'},
+    {n:'Na⁺ (gasimetria)',r:'136–145',u:'mEq/L',a:''},
+    {n:'K⁺ (gasimetria)',r:'3.5–5.0',u:'mEq/L',a:'>5.5 hipercaliemia'},
+    {n:'Glucose (gasimetria)',r:'70–110',u:'mg/dL',a:'Alvo UCI: 140–180 mg/dL'},
+    {n:'Hb (gasimetria)',r:'13–17',u:'g/dL',a:''},
+  ],
+  cardiacos:[
+    {n:'Troponina I',r:'<0.04',u:'ng/mL',a:'>0.04 lesão miocárdica. Pós-CEC: elevação esperada. Elevação progressiva: suspeita de EAM peri-op.'},
+    {n:'Troponina T (hsTnT)',r:'<14',u:'ng/L',a:'Elevação ×5 normal pós-CEC: vigilância. Pico progressivo: EAM.'},
+    {n:'CK-MB',r:'<25',u:'UI/L (ou <5% CK total)',a:'Pós-CEC: elevação esperada (lesão miocárdica cirúrgica). Novo pico: EAM peri-op.'},
+    {n:'BNP',r:'<100',u:'pg/mL',a:'>400 IC provável. Útil no desmame VNI/VMI.'},
+    {n:'NT-proBNP',r:'<300 (excluir IC)',u:'pg/mL',a:'>1800 IC (doentes >75 anos: >1800). Pós-CEC: elevação esperada.'},
+    {n:'Proteína C Reativa (PCR)',r:'<5',u:'mg/L',a:'Pós-CEC: elevação esperada (resposta inflamatória). Pico habitualmente dia 2–3.'},
+  ],
+};
+
+function renderLab(){
+  Object.keys(labData).forEach(cat=>{
+    const el=document.getElementById('lab-'+cat);
+    el.innerHTML=`<div class="lab-grid">${labData[cat].map(l=>`
+      <div class="lab-item">
+        <div class="lab-name">${l.n}</div>
+        <div class="lab-range">${l.r}</div>
+        <div class="lab-unit">${l.u}</div>
+        ${l.a?`<div class="lab-alert">⚠️ ${l.a}</div>`:''}
+      </div>`).join('')}</div>`;
+  });
+}
+
+// ─── CHECKLIST ───────────────────────────────────────────
+const checkItems=[
+  {txt:'Verificar monitor (ritmo, SpO₂, ETCO₂, capnografia)',cat:'Monitorização'},
+  {txt:'Verificar alarmes ativos e limites',cat:'Monitorização'},
+  {txt:'Verificar fios de pacemaker e função (se aplicável)',cat:'Monitorização'},
+  {txt:'Registar sinais vitais (TA, FC, SpO₂, T°, FR, PAM)',cat:'Monitorização'},
+  {txt:'Verificar ventilador — modo, FiO₂, PEEP, volumes',cat:'Ventilação'},
+  {txt:'Verificar pressão do cuff (alvo 20–30 cmH₂O)',cat:'Ventilação'},
+  {txt:'Aspiração de secreções (técnica assética)',cat:'Ventilação'},
+  {txt:'Cuidados à boca (clorhexidina / água oxigenada)',cat:'Ventilação'},
+  {txt:'Verificar drenos (débito, características, permeabilidade)',cat:'Drenagens'},
+  {txt:'Verificar sonda urinária e débito urinário',cat:'Drenagens'},
+  {txt:'Verificar SNG (posição, débito, permeabilidade)',cat:'Drenagens'},
+  {txt:'Verificar acessos venosos (CVC, periférico, arterial)',cat:'Acessos'},
+  {txt:'Verificar pensos de acessos e sinais de infeção',cat:'Acessos'},
+  {txt:'Verificar perfusões ativas (fármacos, concentrações, datas)',cat:'Terapêutica'},
+  {txt:'Administrar terapêutica prescrita',cat:'Terapêutica'},
+  {txt:'Verificar glicemia e ajustar insulina',cat:'Terapêutica'},
+  {txt:'Registo do balanço hídrico (entradas/saídas)',cat:'Balanço'},
+  {txt:'Verificar diurese horária (objetivo >0.5 mL/kg/h)',cat:'Balanço'},
+  {txt:'Posicionamento (decúbito dorsal 30–45° se ventilado)',cat:'Cuidados'},
+  {txt:'Cuidados aos olhos (lubrificação)',cat:'Cuidados'},
+  {txt:'Higiene corporal / cuidados à pele',cat:'Cuidados'},
+  {txt:'Avaliar escala de dor (BPS/NRS) e analgesia',cat:'Conforto'},
+  {txt:'Avaliar sedação (Ramsay/RASS) e ajustar',cat:'Conforto'},
+  {txt:'Colheitas de análises prescritas',cat:'Diagnóstico'},
+  {txt:'Verificar resultados analíticos e alertar médico se crítico',cat:'Diagnóstico'},
+  {txt:'Verificar radiografia/exames pendentes',cat:'Diagnóstico'},
+  {txt:'Contacto com família / registo de visitas',cat:'Comunicação'},
+  {txt:'Preparação da passagem de turno',cat:'Comunicação'},
+];
+
+let checkState={};
+function renderChecklist(){
+  const cats=[...new Set(checkItems.map(c=>c.cat))];
+  let html='';
+  cats.forEach(cat=>{
+    html+=`<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--txt3);margin:14px 0 7px;padding-left:2px">${cat}</div>`;
+    checkItems.filter(c=>c.cat===cat).forEach((c,idx)=>{
+      const key=c.txt;
+      const done=checkState[key]||false;
+      html+=`<div class="check-item ${done?'done':''}" onclick="toggleCheck('${key.replace(/'/g,"\\'")}')">
+        <div class="checkmark">${done?'✓':''}</div>
+        <div class="check-txt">${c.txt}</div>
+        ${done&&checkState[key+'_time']?`<div class="check-time">${checkState[key+'_time']}</div>`:''}
+      </div>`;
+    });
+  });
+  document.getElementById('checklist-list').innerHTML=html;
+  // count
+  const total=checkItems.length;
+  const done=Object.keys(checkState).filter(k=>!k.endsWith('_time')&&checkState[k]).length;
+  document.querySelector('#p-checklist .pg-sub').style.display='block';
+}
+function toggleCheck(key){
+  checkState[key]=!checkState[key];
+  if(checkState[key]) checkState[key+'_time']=new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+  else delete checkState[key+'_time'];
+  renderChecklist();
+}
+function resetChecklist(){
+  if(confirm('Resetar checklist do turno?')){checkState={};renderChecklist();}
+}
+
+// ─── HEMODINÂMICA ────────────────────────────────────────
+function switchHemo(id,btn){
+  ['swan','bis','svo2'].forEach(x=>document.getElementById('hemo-'+x).style.display='none');
+  document.getElementById('hemo-'+id).style.display='block';
+  if(btn){document.querySelectorAll('#p-hemo .itab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+}
+
+const hemoData = {
+  swan:[
+    {
+      param:'Pressão Auricular Direita (PAD / PVC)',
+      normal:'2–8 mmHg',
+      baixo:'< 2 mmHg',
+      alto:'> 8 mmHg',
+      unidade:'mmHg',
+      interp:[
+        {range:'< 2',cls:'b-yel',txt:'Hipovolémia — considerar volume'},
+        {range:'2–8',cls:'b-grn',txt:'Normal'},
+        {range:'8–12',cls:'b-yel',txt:'Elevada — sobrecarga volúmica ou disfunção VD'},
+        {range:'> 12',cls:'b-red',txt:'Muito elevada — IC direita, tamponamento, TEP'},
+      ],
+      nota:'Reflete pré-carga do ventrículo direito. Aumenta em ICC direita, hipertensão pulmonar, tamponamento. Diminui em hipovolémia, vasodilatação.'
+    },
+    {
+      param:'Pressão Artéria Pulmonar Sistólica (PAPS)',
+      normal:'15–30 mmHg',
+      baixo:'—',
+      alto:'> 30 mmHg',
+      unidade:'mmHg',
+      interp:[
+        {range:'15–30',cls:'b-grn',txt:'Normal'},
+        {range:'30–50',cls:'b-yel',txt:'Hipertensão pulmonar ligeira a moderada'},
+        {range:'> 50',cls:'b-red',txt:'Hipertensão pulmonar grave'},
+      ],
+      nota:'Eleva em HTP primária, TEP, DPOC grave, IC esquerda. Pós-CEC pode elevar transitoriamente.'
+    },
+    {
+      param:'Pressão Artéria Pulmonar Diastólica (PAPD)',
+      normal:'8–15 mmHg',
+      baixo:'—',
+      alto:'> 15 mmHg',
+      unidade:'mmHg',
+      interp:[
+        {range:'8–15',cls:'b-grn',txt:'Normal'},
+        {range:'> 15',cls:'b-yel',txt:'Elevada — IC esquerda, hipertensão pulmonar'},
+      ],
+      nota:'Aproxima-se da PCWP em doentes sem doença pulmonar vascular. PAPD – PCWP > 5 mmHg sugere doença vascular pulmonar.'
+    },
+    {
+      param:'Pressão de Encravamento Capilar Pulmonar (PCWP)',
+      normal:'6–12 mmHg',
+      baixo:'< 6 mmHg',
+      alto:'> 18 mmHg',
+      unidade:'mmHg',
+      interp:[
+        {range:'< 6',cls:'b-yel',txt:'Hipovolémia'},
+        {range:'6–12',cls:'b-grn',txt:'Normal'},
+        {range:'13–18',cls:'b-yel',txt:'Elevada — disfunção VE, sobrecarga'},
+        {range:'> 18',cls:'b-red',txt:'Edema pulmonar cardiogénico'},
+        {range:'> 25',cls:'b-red',txt:'Edema pulmonar grave'},
+      ],
+      nota:'Estima a pressão de enchimento do VE (pré-carga esquerda). É o melhor indicador de edema pulmonar cardiogénico. Alvo pós-CEC: 10–15 mmHg.'
+    },
+    {
+      param:'Débito Cardíaco (DC)',
+      normal:'4–8 L/min',
+      baixo:'< 4 L/min',
+      alto:'> 8 L/min',
+      unidade:'L/min',
+      interp:[
+        {range:'< 2',cls:'b-red',txt:'Choque cardiogénico grave'},
+        {range:'2–4',cls:'b-yel',txt:'Baixo débito — IC, hipovolémia'},
+        {range:'4–8',cls:'b-grn',txt:'Normal'},
+        {range:'> 8',cls:'b-yel',txt:'Elevado — sépsis, hipertiroidismo, shunt'},
+      ],
+      nota:'DC = FC × Volume sistólico. Medido por termodiluição. Depende da FC, pré-carga, pós-carga e contratilidade.'
+    },
+    {
+      param:'Índice Cardíaco (DÍC / IC)',
+      normal:'2.5–4.0 L/min/m²',
+      baixo:'< 2.2 L/min/m²',
+      alto:'> 4.0 L/min/m²',
+      unidade:'L/min/m²',
+      interp:[
+        {range:'< 1.8',cls:'b-red',txt:'Choque cardiogénico — intervenção urgente'},
+        {range:'1.8–2.2',cls:'b-red',txt:'Baixo débito crítico — inotrópicos'},
+        {range:'2.2–2.5',cls:'b-yel',txt:'Limítrofe — vigilância, otimizar'},
+        {range:'2.5–4.0',cls:'b-grn',txt:'Normal'},
+        {range:'> 4.0',cls:'b-yel',txt:'Elevado — estados hiperdinâmicos'},
+      ],
+      nota:'IC = DC / ASC (Área Superfície Corporal). Parametriza o DC pelo tamanho do doente. É o parâmetro mais usado para decisão terapêutica pós-CEC.'
+    },
+    {
+      param:'Resistências Vasculares Sistémicas (RVS)',
+      normal:'800–1200 dyn·s/cm⁵',
+      baixo:'< 800',
+      alto:'> 1200',
+      unidade:'dyn·s/cm⁵',
+      interp:[
+        {range:'< 600',cls:'b-red',txt:'Muito baixas — choque distributivo/vasoplégico'},
+        {range:'600–800',cls:'b-yel',txt:'Baixas — vasodilatação, sépsis'},
+        {range:'800–1200',cls:'b-grn',txt:'Normal'},
+        {range:'> 1200',cls:'b-yel',txt:'Elevadas — vasoconstrição, IC, hipovolémia'},
+        {range:'> 1800',cls:'b-red',txt:'Muito elevadas — vasoconstrição grave'},
+      ],
+      nota:'Fórmula: RVS = [(PAM – PAD) / DC] × 80. Baixas em choque sético/vasoplégico pós-CEC → noradrenalina. Elevadas em IC → vasodilatadores.'
+    },
+    {
+      param:'Resistências Vasculares Pulmonares (RVP)',
+      normal:'< 250 dyn·s/cm⁵ (< 3 UW)',
+      baixo:'—',
+      alto:'> 250 dyn·s/cm⁵',
+      unidade:'dyn·s/cm⁵',
+      interp:[
+        {range:'< 250',cls:'b-grn',txt:'Normal'},
+        {range:'250–500',cls:'b-yel',txt:'HTP ligeira — vigilância'},
+        {range:'> 500',cls:'b-red',txt:'HTP moderada a grave — risco VD'},
+      ],
+      nota:'Fórmula: RVP = [(PAP média – PCWP) / DC] × 80. Elevadas em HTP, TEP, DPOC. Importante na avaliação de candidatos a transplante cardíaco.'
+    },
+  ],
+  bis:[
+    {
+      param:'BIS — Bispectral Index',
+      normal:'40–60 (sedação UCI)',
+      baixo:'< 40',
+      alto:'> 60',
+      unidade:'0–100',
+      interp:[
+        {range:'0',cls:'b-red',txt:'EEG isoelétrico / supressão total'},
+        {range:'< 20',cls:'b-red',txt:'Sedação excessiva / burst suppression'},
+        {range:'20–40',cls:'b-yel',txt:'Sedação profunda — anestesia geral'},
+        {range:'40–60',cls:'b-grn',txt:'Sedação adequada UCI (alvo habitual)'},
+        {range:'60–80',cls:'b-yel',txt:'Sedação leve / cooperante'},
+        {range:'80–100',cls:'b-yel',txt:'Vigília / alerta'},
+        {range:'100',cls:'b-blu',txt:'Completamente acordado'},
+      ],
+      nota:'O BIS mede a profundidade de sedação através da análise do EEG processado. Alvo UCI sedação moderada: 40–60. Sedação profunda (ex. ARDS, hipertensão intracraniana): 20–40. Verificar sempre o EMG (interferência muscular).'
+    },
+    {
+      param:'BIS — EMG (Interferência Muscular)',
+      normal:'< 30 dB',
+      baixo:'—',
+      alto:'> 50 dB',
+      unidade:'dB',
+      interp:[
+        {range:'< 30',cls:'b-grn',txt:'EMG baixo — leitura BIS fiável'},
+        {range:'30–50',cls:'b-yel',txt:'EMG moderado — pode sobrevalorizar BIS'},
+        {range:'> 50',cls:'b-red',txt:'EMG elevado — leitura BIS não fiável'},
+      ],
+      nota:'EMG alto falseia o BIS para valores mais elevados. Causas: tremor, agitação, bloqueio neuromuscular insuficiente. Verificar sempre o EMG antes de interpretar o BIS.'
+    },
+    {
+      param:'BIS — SR (Supression Ratio)',
+      normal:'0% (doente sedado mas não suprimido)',
+      baixo:'—',
+      alto:'> 10%',
+      unidade:'%',
+      interp:[
+        {range:'0%',cls:'b-grn',txt:'Sem supressão — normal'},
+        {range:'1–20%',cls:'b-yel',txt:'Supressão intermitente — sedação profunda'},
+        {range:'> 20%',cls:'b-red',txt:'Supressão frequente — risco de sedação excessiva'},
+      ],
+      nota:'SR = % de tempo com EEG plano nos últimos 63 segundos. SR >0 indica burst-suppression. Em contexto neurológico pode ser intencional (status epilepticus). Na sedação UCI deve ser evitado.'
+    },
+    {
+      param:'Alvos BIS por contexto clínico',
+      normal:'40–60 (UCI padrão)',
+      baixo:'—',
+      alto:'—',
+      unidade:'',
+      interp:[
+        {range:'40–60',cls:'b-grn',txt:'Sedação UCI padrão (propofol/midazolam)'},
+        {range:'40–60',cls:'b-grn',txt:'Pós-operatório cardíaco'},
+        {range:'20–40',cls:'b-yel',txt:'Sedação profunda (ARDS, HIC, status)'},
+        {range:'60–80',cls:'b-blu',txt:'Dexmedetomidina / sedação cooperante'},
+        {range:'< 60',cls:'b-yel',txt:'Durante bloqueio neuromuscular (BNM)'},
+      ],
+      nota:'Durante BNM o BIS é o único monitor de sedação disponível (impossível avaliar clinicamente). Alvo BIS < 60 com BNM ativo.'
+    },
+  ],
+  svo2:[
+    {
+      param:'SvO₂ — Saturação Venosa Mista (Swan-Ganz)',
+      normal:'65–75%',
+      baixo:'< 65%',
+      alto:'> 75%',
+      unidade:'%',
+      interp:[
+        {range:'< 50%',cls:'b-red',txt:'Extração O₂ máxima — choque grave, isquémia'},
+        {range:'50–65%',cls:'b-red',txt:'Baixa — inadequação DO₂/VO₂'},
+        {range:'65–75%',cls:'b-grn',txt:'Normal'},
+        {range:'75–80%',cls:'b-yel',txt:'Elevada — shunt, sépsis, envenenamento CO'},
+        {range:'> 80%',cls:'b-red',txt:'Muito elevada — shunt ou uso O₂ reduzido'},
+      ],
+      nota:'Medida na artéria pulmonar (sangue venoso misto). Reflete o balanço global entre entrega (DO₂) e consumo (VO₂) de O₂. É o melhor indicador de perfusão tecidual global. Alvo pós-CEC: ≥65%.'
+    },
+    {
+      param:'ScvO₂ — Saturação Venosa Central (CVC)',
+      normal:'70–80%',
+      baixo:'< 70%',
+      alto:'> 80%',
+      unidade:'%',
+      interp:[
+        {range:'< 60%',cls:'b-red',txt:'Muito baixa — hipoperfusão grave'},
+        {range:'60–70%',cls:'b-red',txt:'Baixa — aumentar DC ou Hb ou SaO₂'},
+        {range:'70–80%',cls:'b-grn',txt:'Normal'},
+        {range:'> 80%',cls:'b-yel',txt:'Elevada — sépsis, cirrose, shunt'},
+      ],
+      nota:'Medida no CVC (jugular/subclávia). Aproxima-se da SvO₂ mas é ~5–8% superior. Mais acessível (não requer Swan-Ganz). Usada nos protocolos de sépsis (alvo ≥70%). Pós-CEC alvo ≥70%.'
+    },
+    {
+      param:'Diferença arteriovenosa O₂ (DavO₂)',
+      normal:'4–6 mL/dL',
+      baixo:'< 4 mL/dL',
+      alto:'> 6 mL/dL',
+      unidade:'mL/dL',
+      interp:[
+        {range:'< 4',cls:'b-yel',txt:'Baixa extração — estados hiperdinâmicos, shunt'},
+        {range:'4–6',cls:'b-grn',txt:'Normal'},
+        {range:'> 6',cls:'b-red',txt:'Extração elevada — baixo DC, anemia, hipoxia'},
+      ],
+      nota:'DavO₂ = CaO₂ – CvO₂. Aumenta quando o DC é insuficiente para as necessidades metabólicas. Fórmula simplificada: DavO₂ ≈ (SaO₂ – SvO₂) × Hb × 1.34.'
+    },
+    {
+      param:'Entrega de Oxigénio (DO₂)',
+      normal:'520–720 mL/min/m²',
+      baixo:'< 520 mL/min/m²',
+      alto:'—',
+      unidade:'mL/min/m²',
+      interp:[
+        {range:'< 300',cls:'b-red',txt:'Criticamente baixa — isquémia iminente'},
+        {range:'300–520',cls:'b-yel',txt:'Baixa — otimizar DC, Hb, SaO₂'},
+        {range:'520–720',cls:'b-grn',txt:'Normal'},
+      ],
+      nota:'DO₂ = IC × CaO₂ × 10. Depende do índice cardíaco, hemoglobina e SaO₂. Alvo pós-CEC: >520 mL/min/m². Para aumentar: inotrópicos, transfusão (Hb <7), O₂ suplementar.'
+    },
+    {
+      param:'Consumo de Oxigénio (VO₂)',
+      normal:'100–180 mL/min/m²',
+      baixo:'< 100 mL/min/m²',
+      alto:'> 180 mL/min/m²',
+      unidade:'mL/min/m²',
+      interp:[
+        {range:'< 100',cls:'b-yel',txt:'Baixo — hipotermia, sedação profunda'},
+        {range:'100–180',cls:'b-grn',txt:'Normal'},
+        {range:'> 180',cls:'b-yel',txt:'Elevado — febre, sépsis, agitação, convulsões'},
+      ],
+      nota:'VO₂ = IC × (CaO₂ – CvO₂) × 10. Aumenta com febre (+10–13% por cada 1°C), sépsis, agitação. Diminui com hipotermia e sedação profunda.'
+    },
+  ]
+};
+
+function renderHemo(){
+  Object.keys(hemoData).forEach(cat=>{
+    const el=document.getElementById('hemo-'+cat);
+    if(!el) return;
+    el.innerHTML=hemoData[cat].map(p=>`
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-hd">
+          <h3>${p.param}</h3>
+          <span class="badge b-teal">${p.normal}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          ${p.interp.map(i=>`
+            <div style="background:var(--s2);border:1px solid var(--bord);border-radius:var(--rs);padding:9px 11px">
+              <div style="font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:700;margin-bottom:3px"><span class="badge ${i.cls}">${i.range} ${p.unidade}</span></div>
+              <div style="font-size:0.78rem;color:var(--txt2);line-height:1.4">${i.txt}</div>
+            </div>`).join('')}
+        </div>
+        <div style="background:rgba(0,212,170,0.06);border:1px solid rgba(0,212,170,0.18);border-radius:var(--rs);padding:10px 12px;font-size:0.79rem;color:var(--txt2);line-height:1.7">
+          <span style="color:var(--acc);font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Interpretação clínica</span><br>${p.nota}
+        </div>
+      </div>`).join('');
+  });
+}
+
+// ─── PWA ─────────────────────────────────────────────────
+const mdata={name:'NurseDesk UCI Cardíaca',short_name:'NurseDesk',display:'standalone',background_color:'#0a0e14',theme_color:'#00d4aa',start_url:'.',icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0e14'/><text y='62' x='50' text-anchor='middle' font-size='60'>🫀</text></svg>",sizes:'any',type:'image/svg+xml',purpose:'any maskable'}]};
+const mb=new Blob([JSON.stringify(mdata)],{type:'application/json'});
+const ml=document.createElement('link');ml.rel='manifest';ml.href=URL.createObjectURL(mb);document.head.appendChild(ml);
+let dp=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;showIB();});
+function showIB(){
+  if(document.getElementById('ib'))return;
+  const b=document.createElement('div');b.id='ib';
+  b.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:999;background:var(--s1);border-top:2px solid var(--acc);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:Outfit,sans-serif;';
+  b.innerHTML=`<div><div style="font-weight:700;color:var(--txt);font-size:0.9rem">🫀 Instalar NurseDesk</div><div style="font-size:0.75rem;color:var(--txt2)">Adicionar ao ecrã inicial</div></div><div style="display:flex;gap:6px"><button onclick="document.getElementById('ib').remove()" style="padding:6px 12px;border:1px solid var(--bord);border-radius:8px;background:none;color:var(--txt2);cursor:pointer;font-size:0.8rem">✕</button><button onclick="instApp()" style="padding:7px 16px;border:none;border-radius:8px;background:var(--acc);color:#0a0e14;cursor:pointer;font-weight:700;font-size:0.85rem">Instalar</button></div>`;
+  document.body.appendChild(b);
+}
+function instApp(){if(dp){dp.prompt();dp.userChoice.then(()=>{dp=null;const b=document.getElementById('ib');if(b)b.remove();});}else{alert('Chrome ⋮ → Adicionar ao ecrã inicial');}}
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    if(!dp&&!window.matchMedia('(display-mode:standalone)').matches){
+      const isA=/android/i.test(navigator.userAgent),isI=/iphone|ipad/i.test(navigator.userAgent);
+      if(isA||isI){const t=document.createElement('div');t.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:999;background:var(--s1);border-top:2px solid var(--acc);padding:12px 16px;font-family:Outfit,sans-serif;';t.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:700;color:var(--txt);font-size:0.88rem;margin-bottom:3px">📱 Instalar NurseDesk como App</div><div style="font-size:0.76rem;color:var(--txt2)">${isI?'Safari: Partilhar ↑ → Adicionar ao ecrã inicial':'Chrome: ⋮ → Adicionar ao ecrã inicial'}</div></div><button onclick="this.parentElement.parentElement.remove()" style="padding:6px 10px;border:1px solid var(--bord);border-radius:8px;background:none;color:var(--txt2);cursor:pointer;">✕</button></div>`;document.body.appendChild(t);}
+    }
+  },3000);
+});
+
+// ─── INIT ────────────────────────────────────────────────
+renderDrugs();
+renderArritmias();
+renderProtos();
+renderLab();
+renderHemo();
+renderChecklist();
+</script>
+
+<meta name="theme-color" content="#00d4aa">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NurseDesk">
+</body>
+</html>
